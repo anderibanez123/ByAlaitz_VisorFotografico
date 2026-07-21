@@ -1,4 +1,4 @@
-# SuperRutas - Visor web de fotografias para stand
+# ByAlaitz - Visor web de fotografias para stand
 
 ## Objetivo
 
