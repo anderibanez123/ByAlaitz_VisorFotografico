@@ -18,6 +18,6 @@ Usar `publicacion-github-pages.zip`. No subir carpetas de fotos locales (`Imagen
 
 ## Google Drive
 
-`config.json` esta configurado para usar Google Drive como fuente, pero necesita `driveApiKey` para listar imagenes desde cualquier navegador. La clave debe estar restringida a Google Drive API y, cuando exista la URL de GitHub Pages, al dominio publicado.
+`config.json` esta configurado para usar Google Drive como fuente e incluye la `driveApiKey` para listar imagenes desde cualquier navegador. La clave debe estar restringida a Google Drive API y, cuando exista la URL de GitHub Pages, al dominio publicado.
 
 Si no quieres escribir la API key manualmente en `config.json`, puedes abrir `/admin/` en la web publicada, pegarla alli y guardar. Eso solo quedara guardado en ese navegador. Para que funcione igual para todo el mundo, exporta `config.json` desde admin y sube ese archivo al repo.

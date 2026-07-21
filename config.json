@@ -8,7 +8,7 @@
   "manifestUrl": "manifest.json",
   "driveFolderId": "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ",
   "uploadTargetUrl": "",
-  "driveApiKey": "",
+  "driveApiKey": "AIzaSyAmQF3A9MNqKYKnG2MkPFIgTQPgJ71Mnz8",
   "pollSeconds": 45,
   "contactBar": {
     "enabled": true,
