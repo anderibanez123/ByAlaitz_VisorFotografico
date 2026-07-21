@@ -1,0 +1,44 @@
+{
+  "intervalSeconds": 5,
+  "transitionMs": 1200,
+  "transitionType": "fade",
+  "playOrder": "sequential",
+  "decorativeBackground": true,
+  "sourceType": "drive",
+  "manifestUrl": "manifest.json",
+  "driveFolderId": "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ",
+  "uploadTargetUrl": "",
+  "driveApiKey": "",
+  "pollSeconds": 45,
+  "contactBar": {
+    "enabled": true,
+    "mode": "fixed",
+    "speed": 28,
+    "items": [
+      {
+        "type": "instagram",
+        "label": "Instagram",
+        "value": "@tu_instagram",
+        "url": ""
+      },
+      {
+        "type": "tiktok",
+        "label": "TikTok",
+        "value": "@tu_tiktok",
+        "url": ""
+      },
+      {
+        "type": "email",
+        "label": "Correo",
+        "value": "correo@ejemplo.com",
+        "url": ""
+      },
+      {
+        "type": "phone",
+        "label": "Contacto",
+        "value": "+34 600 000 000",
+        "url": ""
+      }
+    ]
+  }
+}
