@@ -358,7 +358,7 @@ select {
   position: fixed;
   right: clamp(18px, 3vw, 46px);
   bottom: clamp(3px, 0.6vw, 10px);
-  width: clamp(72px, 9vw, 150px);
+  width: clamp(54px, 6.4vw, 108px);
   display: block;
   opacity: 0.86;
   transition: opacity 180ms ease, transform 180ms ease;
