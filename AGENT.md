@@ -1,4 +1,4 @@
-# ByAlaitz - Visor web de fotografias para stand
+# SuperRutas - Visor web de fotografias para stand
 
 ## Objetivo
 
@@ -16,6 +16,7 @@ Fecha objetivo indicada por el usuario: sabado 25 de julio de 2026. La idea es d
 - `config.json`: configuracion base compartida para cualquier persona que abra la app.
 - `assets/drive-upload-qr.png`: QR local para abrir la carpeta de Google Drive configurada.
 - `assets/favicon.png` y `assets/favicon-32.png`: iconos de pestana generados desde el logo.
+- `assets/logo.png`: logo usado por el visor y el admin en produccion.
 - `manifest.json`: lista local de imagenes de prueba incluida en el repositorio.
 - `scripts/optimize_images.py`: conversor local de fotografias a WebP optimizado y regenerador de `manifest.json`.
 - `Imagenes/Mesa de trabajo 31.png`: logo/marca de agua.

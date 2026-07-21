@@ -5,155 +5,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050505">
-  <title>ByAlaitz | Admin</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
-  <link rel="apple-touch-icon" href="../assets/favicon.png">
-  <link rel="stylesheet" href="../styles.css?v=20260721-qr">
+  <title>ByAlaitz | Visor de fotografias</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css?v=20260721-qr">
 </head>
 
-<body class="admin-screen">
-  <main class="admin-shell">
-    <section id="lockPanel" class="admin-card compact">
-      <img class="admin-logo" src="../Imagenes/Mesa%20de%20trabajo%2031.png" alt="SuperRutas">
-      <h1>Panel del visor</h1>
-      <p>Introduce la clave local para ajustar la presentacion.</p>
-      <form id="unlockForm" class="form-grid">
-        <label>
-          Clave
-          <input id="passcodeInput" type="password" autocomplete="current-password" placeholder="stand2026">
-        </label>
-        <button type="submit" class="primary-button">Entrar</button>
-      </form>
-      <a class="ghost-link lock-back-link" href="../">Volver al visor</a>
-    </section>
-
-    <section id="settingsPanel" class="admin-card hidden">
-      <header class="admin-header">
-        <div>
-          <h1>Configuracion del stand</h1>
-          <p>Los cambios se guardan en este navegador y el visor los aplica sin recargar.</p>
-        </div>
-        <a class="ghost-link" href="../">Volver al visor</a>
-      </header>
-
-      <form id="settingsForm" class="settings-grid">
-        <fieldset>
-          <legend>Reproduccion</legend>
-          <label>
-            Tiempo entre fotos
-            <input id="intervalSeconds" type="range" min="1" max="60" step="1">
-            <output id="intervalOutput"></output>
-          </label>
-          <label>
-            Velocidad de transicion
-            <input id="transitionMs" type="range" min="150" max="5000" step="50">
-            <output id="transitionOutput"></output>
-          </label>
-          <label>
-            Efecto
-            <select id="transitionType">
-              <option value="fade">Fundido</option>
-              <option value="slide-x">Deslizamiento horizontal</option>
-              <option value="slide-y">Deslizamiento vertical</option>
-              <option value="zoom">Zoom suave</option>
-              <option value="wipe">Barrido lateral</option>
-              <option value="blur">Desenfoque</option>
-              <option value="lift">Elevacion suave</option>
-              <option value="rotate">Giro deportivo</option>
-              <option value="flip">Volteo 3D</option>
-              <option value="none">Sin efecto</option>
-            </select>
-          </label>
-          <label>
-            Orden
-            <select id="playOrder">
-              <option value="sequential">Secuencial</option>
-              <option value="random">Aleatorio</option>
-            </select>
-          </label>
-          <label class="switch-row">
-            <input id="decorativeBackground" type="checkbox">
-            Fondo decorativo
-          </label>
-        </fieldset>
-
-        <fieldset class="source-fieldset">
-          <legend>Fuente de imagenes</legend>
-          <label>
-            Origen
-            <select id="sourceType">
-              <option value="manifest">Manifest local</option>
-              <option value="drive">Google Drive publico</option>
-              <option value="json">Endpoint JSON publico</option>
-            </select>
-          </label>
-          <aside id="driveQrCard" class="drive-qr-card">
-            <img id="driveQrImage" src="../assets/drive-upload-qr.png" alt="QR para abrir la carpeta de subida">
-            <span>QR para subir fotos</span>
-            <a id="driveFolderLink" class="ghost-link small-link"
-              href="https://drive.google.com/drive/folders/12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ" target="_blank"
-              rel="noreferrer">Abrir carpeta</a>
-          </aside>
-          <label>
-            URL del manifest o endpoint
-            <input id="manifestUrl" type="url" placeholder="manifest.json">
-          </label>
-          <label>
-            Google Drive folder ID
-            <input id="driveFolderId" type="text" spellcheck="false">
-          </label>
-          <label>
-            URL para QR de subida
-            <input id="uploadTargetUrl" type="url" placeholder="https://forms.gle/...">
-          </label>
-          <label>
-            Google API key
-            <input id="driveApiKey" type="password" spellcheck="false">
-          </label>
-          <label>
-            Polling
-            <input id="pollSeconds" type="range" min="30" max="120" step="5">
-            <output id="pollOutput"></output>
-          </label>
-        </fieldset>
-
-        <fieldset class="wide-fieldset">
-          <legend>Barra de contacto</legend>
-          <label class="switch-row">
-            <input id="contactBarEnabled" type="checkbox">
-            Mostrar barra superior
-          </label>
-          <label>
-            Movimiento
-            <select id="contactBarMode">
-              <option value="fixed">Texto fijo</option>
-              <option value="marquee">Texto deslizante</option>
-            </select>
-          </label>
-          <label>
-            Velocidad del movimiento
-            <input id="contactBarSpeed" type="range" min="8" max="80" step="1">
-            <output id="contactBarSpeedOutput"></output>
-          </label>
-          <div class="contact-editor">
-            <div class="contact-editor-header">
-              <span>Redes y contacto</span>
-              <button id="addContactItem" class="secondary-button small-button" type="button">Anadir</button>
-            </div>
-            <div id="contactItems" class="contact-items"></div>
-          </div>
-        </fieldset>
-      </form>
-
-      <footer class="admin-footer">
-        <button id="saveButton" class="primary-button" type="button">Guardar</button>
-        <button id="exportConfigButton" class="secondary-button" type="button">Exportar config.json</button>
-        <button id="resetButton" class="secondary-button" type="button">Restaurar MVP</button>
-        <span id="saveStatus" role="status"></span>
-      </footer>
-    </section>
+<body class="screen">
+  <main id="viewer" class="viewer" aria-live="polite">
+    <div id="decor" class="decor" aria-hidden="true"></div>
+    <aside id="contactBar" class="contact-bar" aria-label="Informacion de contacto"></aside>
+    <div id="stage" class="stage">
+      <img id="currentImage" class="slide current" alt="">
+      <img id="nextImage" class="slide next" alt="">
+    </div>
+      <a class="brand-link" href="admin/" aria-label="Abrir panel de administracion" title="Admin">
+        <img class="brand-mark" src="assets/logo.png" alt="SuperRutas">
+      </a>
+      <p class="credit-line">Fotografias de ByAlaitz - Web por anderibanez_</p>
+      <div id="status" class="viewer-status">Cargando fotografias...</div>
+    <button id="fullscreenButton" class="floating-action" type="button" aria-label="Pantalla completa"
+      title="Pantalla completa">FS</button>
+    <button id="wakeButton" class="wake-action" type="button" aria-label="Mostrar control"
+      title="Mostrar control"></button>
   </main>
-  <script src="../admin.js?v=20260721-qr"></script>
+    <script src="app.js?v=20260721-qr"></script>
 </body>
 
 </html>
