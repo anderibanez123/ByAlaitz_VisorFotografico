@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 
 <head>
@@ -8,7 +8,7 @@
   <title>ByAlaitz | Admin</title>
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
   <link rel="apple-touch-icon" href="../assets/favicon.png">
-  <link rel="stylesheet" href="../styles.css?v=20260721-qr">
+  <link rel="stylesheet" href="../styles.css?v=20260722-admin-organized">
 </head>
 
 <body class="admin-screen">
@@ -16,77 +16,119 @@
     <section id="lockPanel" class="admin-card compact">
       <img class="admin-logo" src="../assets/logo.png" alt="SuperRutas">
       <h1>Panel del visor</h1>
-      <p>Introduce la clave local para ajustar la presentacion.</p>
+      <p>Inicia sesion con tu usuario autorizado de Supabase.</p>
       <form id="unlockForm" class="form-grid">
         <label>
-          Clave
-          <input id="passcodeInput" type="password" autocomplete="current-password" placeholder="stand2026">
+          Usuario o email
+          <input id="emailInput" type="text" autocomplete="username" placeholder="admin" required>
+        </label>
+        <label>
+          Contrasena
+          <input id="passwordInput" type="password" autocomplete="current-password" required>
         </label>
         <button type="submit" class="primary-button">Entrar</button>
+        <span id="authStatus" class="field-note" role="status"></span>
       </form>
-      <a class="ghost-link lock-back-link" href="../">Volver al visor</a>
+      <a class="ghost-link lock-back-link" href="../visor/">Volver al visor</a>
     </section>
 
     <section id="settingsPanel" class="admin-card hidden">
       <header class="admin-header">
         <div>
-          <h1>Configuracion del stand</h1>
-          <p>Los cambios se guardan en este navegador y el visor los aplica sin recargar.</p>
+          <h1>Panel de control</h1>
+          <p>Organiza el visor privado, la galeria publica y los datos visibles en pantalla.</p>
         </div>
-        <a class="ghost-link" href="../">Volver al visor</a>
+        <div class="admin-actions">
+          <span id="currentUserEmail" class="field-note"></span>
+          <a class="ghost-link" href="../">Galeria</a>
+          <a class="ghost-link" href="../visor/">Visor privado</a>
+          <a class="ghost-link" href="../Guia_uso_ByAlaitz.html">Guia</a>
+          <button id="logoutButton" class="secondary-button" type="button">Cerrar sesion</button>
+        </div>
       </header>
 
+      <nav class="admin-section-nav" aria-label="Secciones del panel">
+        <a href="#admin-presentation">Presentacion</a>
+        <a href="#admin-source">Imagenes</a>
+        <a href="#admin-gallery">Galeria publica</a>
+        <a href="#admin-appearance">Aspecto</a>
+        <a href="#admin-contact">Contacto</a>
+      </nav>
+
       <form id="settingsForm" class="settings-grid">
-        <fieldset>
-          <legend>Reproduccion</legend>
-          <label>
-            Tiempo entre fotos
-            <input id="intervalSeconds" type="range" min="1" max="60" step="1">
-            <output id="intervalOutput"></output>
-          </label>
-          <label>
-            Velocidad de transicion
-            <input id="transitionMs" type="range" min="150" max="5000" step="50">
-            <output id="transitionOutput"></output>
-          </label>
-          <label>
-            Efecto
-            <select id="transitionType">
-              <option value="fade">Fundido</option>
-              <option value="slide-x">Deslizamiento horizontal</option>
-              <option value="slide-y">Deslizamiento vertical</option>
-              <option value="zoom">Zoom suave</option>
-              <option value="wipe">Barrido lateral</option>
-              <option value="blur">Desenfoque</option>
-              <option value="lift">Elevacion suave</option>
-              <option value="rotate">Giro deportivo</option>
-              <option value="flip">Volteo 3D</option>
-              <option value="none">Sin efecto</option>
-            </select>
-          </label>
-          <label>
-            Orden
-            <select id="playOrder">
-              <option value="sequential">Secuencial</option>
-              <option value="random">Aleatorio</option>
-            </select>
-          </label>
-          <label class="switch-row">
-            <input id="decorativeBackground" type="checkbox">
-            Fondo decorativo
-          </label>
+        <fieldset id="admin-presentation" class="admin-section-card">
+          <legend>Presentacion del stand</legend>
+          <p class="section-note">Ritmo, orden y efectos del visor privado que usas en pantalla completa.</p>
+          <div class="admin-control-grid">
+            <label>
+              Tiempo entre fotos
+              <input id="intervalSeconds" type="range" min="1" max="60" step="1">
+              <output id="intervalOutput"></output>
+            </label>
+            <label>
+              Velocidad de transicion
+              <input id="transitionMs" type="range" min="150" max="5000" step="50">
+              <output id="transitionOutput"></output>
+            </label>
+            <label>
+              Efecto
+              <select id="transitionType">
+                <option value="fade">Fundido</option>
+                <option value="slide-x">Deslizamiento horizontal</option>
+                <option value="slide-y">Deslizamiento vertical</option>
+                <option value="zoom">Zoom suave</option>
+                <option value="wipe">Barrido lateral</option>
+                <option value="blur">Desenfoque</option>
+                <option value="lift">Elevacion suave</option>
+                <option value="rotate">Giro deportivo</option>
+                <option value="flip">Volteo 3D</option>
+                <option value="none">Sin efecto</option>
+              </select>
+            </label>
+            <label>
+              Orden
+              <select id="playOrder">
+                <option value="sequential">Secuencial</option>
+                <option value="random">Aleatorio</option>
+              </select>
+            </label>
+          </div>
         </fieldset>
 
-        <fieldset class="source-fieldset">
-          <legend>Fuente de imagenes</legend>
-          <label>
-            Origen
-            <select id="sourceType">
-              <option value="manifest">Manifest local</option>
-              <option value="drive">Google Drive publico</option>
-              <option value="json">Endpoint JSON publico</option>
-            </select>
-          </label>
+        <fieldset id="admin-source" class="admin-section-card source-fieldset">
+          <legend>Imagenes y subida</legend>
+          <p class="section-note">Origen de las fotos, carpeta compartida y QR para subir desde otro dispositivo.</p>
+          <div class="source-fields">
+            <label>
+              Origen
+              <select id="sourceType">
+                <option value="manifest">Manifest local</option>
+                <option value="drive">Google Drive publico</option>
+                <option value="json">Endpoint JSON publico</option>
+              </select>
+            </label>
+            <label>
+              URL del manifest o endpoint
+              <input id="manifestUrl" type="url" placeholder="manifest.json">
+            </label>
+            <label>
+              Google Drive folder ID
+              <input id="driveFolderId" type="text" spellcheck="false">
+            </label>
+            <label>
+              URL para QR de subida
+              <input id="uploadTargetUrl" type="url" placeholder="https://forms.gle/...">
+            </label>
+            <label>
+              Google API key
+              <input id="driveApiKey" type="password" spellcheck="false">
+            </label>
+            <label>
+              Polling
+              <input id="pollSeconds" type="range" min="30" max="120" step="5">
+              <output id="pollOutput"></output>
+            </label>
+          </div>
           <aside id="driveQrCard" class="drive-qr-card">
             <img id="driveQrImage" src="../assets/drive-upload-qr.png" alt="QR para abrir la carpeta de subida">
             <span>QR para subir fotos</span>
@@ -94,48 +136,96 @@
               href="https://drive.google.com/drive/folders/12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ" target="_blank"
               rel="noreferrer">Abrir carpeta</a>
           </aside>
-          <label>
-            URL del manifest o endpoint
-            <input id="manifestUrl" type="url" placeholder="manifest.json">
-          </label>
-          <label>
-            Google Drive folder ID
-            <input id="driveFolderId" type="text" spellcheck="false">
-          </label>
-          <label>
-            URL para QR de subida
-            <input id="uploadTargetUrl" type="url" placeholder="https://forms.gle/...">
-          </label>
-          <label>
-            Google API key
-            <input id="driveApiKey" type="password" spellcheck="false">
-          </label>
-          <label>
-            Polling
-            <input id="pollSeconds" type="range" min="30" max="120" step="5">
-            <output id="pollOutput"></output>
-          </label>
         </fieldset>
 
-        <fieldset class="wide-fieldset">
-          <legend>Barra de contacto</legend>
-          <label class="switch-row">
-            <input id="contactBarEnabled" type="checkbox">
-            Mostrar barra superior
-          </label>
-          <label>
-            Movimiento
-            <select id="contactBarMode">
-              <option value="fixed">Texto fijo</option>
-              <option value="marquee">Texto deslizante</option>
-            </select>
-          </label>
-          <label>
-            Velocidad del movimiento
-            <input id="contactBarSpeed" type="range" min="8" max="80" step="1">
-            <output id="contactBarSpeedOutput"></output>
-          </label>
-          <div class="contact-editor">
+        <fieldset id="admin-gallery" class="admin-section-card gallery-admin-fieldset">
+          <legend>Galeria publica</legend>
+          <p class="section-note">Eventos visibles para cualquiera que entre desde el QR publico.</p>
+          <div class="gallery-admin-toolbar">
+            <div>
+              <span>Secciones de la galeria</span>
+              <p class="field-note">Crea eventos y selecciona que fotos del Drive aparecen en cada uno.</p>
+            </div>
+            <div class="gallery-admin-actions">
+              <button id="refreshGalleryImages" class="secondary-button small-button" type="button">Cargar fotos</button>
+              <button id="addGallerySection" class="secondary-button small-button" type="button">Anadir galeria</button>
+            </div>
+          </div>
+          <span id="galleryAdminStatus" class="field-note" role="status"></span>
+          <div id="gallerySectionsEditor" class="gallery-sections-editor"></div>
+        </fieldset>
+
+        <fieldset id="admin-appearance" class="admin-section-card">
+          <legend>Aspecto del visor</legend>
+          <p class="section-note">Fondo general y ajustes visuales que acompanan a la presentacion.</p>
+          <div class="admin-control-grid">
+            <label class="switch-row">
+              <input id="decorativeBackground" type="checkbox">
+              Fondo decorativo
+            </label>
+            <label>
+              Tipo de fondo
+              <select id="backgroundMode">
+                <option value="default">Fondo por defecto</option>
+                <option value="solid">Color solido</option>
+                <option value="image">Imagen personalizada</option>
+              </select>
+            </label>
+            <label>
+              Color base
+              <input id="backgroundColor" type="color">
+            </label>
+            <label>
+              Imagen de fondo
+              <input id="backgroundImageInput" type="file" accept="image/*">
+              <span id="backgroundImageStatus" class="field-note">Sin imagen personalizada</span>
+            </label>
+            <label>
+              Brillo
+              <input id="backgroundBrightness" type="range" min="20" max="120" step="1">
+              <output id="backgroundBrightnessOutput"></output>
+            </label>
+            <label>
+              Opacidad
+              <input id="backgroundOpacity" type="range" min="20" max="100" step="1">
+              <output id="backgroundOpacityOutput"></output>
+            </label>
+            <label>
+              Desenfoque
+              <input id="backgroundBlur" type="range" min="0" max="18" step="1">
+              <output id="backgroundBlurOutput"></output>
+            </label>
+            <label>
+              Saturacion
+              <input id="backgroundSaturation" type="range" min="40" max="150" step="1">
+              <output id="backgroundSaturationOutput"></output>
+            </label>
+          </div>
+          <button id="removeBackgroundImage" class="secondary-button section-action" type="button">Quitar imagen</button>
+        </fieldset>
+
+        <fieldset id="admin-contact" class="admin-section-card">
+          <legend>Barra superior de contacto</legend>
+          <p class="section-note">Iconos y datos visibles arriba en el visor privado.</p>
+          <div class="admin-control-grid compact-grid">
+            <label class="switch-row">
+              <input id="contactBarEnabled" type="checkbox">
+              Mostrar barra superior
+            </label>
+            <label>
+              Movimiento
+              <select id="contactBarMode">
+                <option value="fixed">Texto fijo</option>
+                <option value="marquee">Texto deslizante</option>
+              </select>
+            </label>
+            <label>
+              Velocidad del movimiento
+              <input id="contactBarSpeed" type="range" min="8" max="80" step="1">
+              <output id="contactBarSpeedOutput"></output>
+            </label>
+          </div>
+          <div class="contact-editor embedded-editor">
             <div class="contact-editor-header">
               <span>Redes y contacto</span>
               <button id="addContactItem" class="secondary-button small-button" type="button">Anadir</button>
@@ -153,7 +243,10 @@
       </footer>
     </section>
   </main>
-  <script src="../admin.js?v=20260721-qr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../admin.js?v=20260722-admin-organized"></script>
 </body>
 
 </html>
+
+

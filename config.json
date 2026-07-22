@@ -1,44 +1,64 @@
-{
-  "intervalSeconds": 5,
-  "transitionMs": 1200,
-  "transitionType": "fade",
-  "playOrder": "sequential",
-  "decorativeBackground": true,
-  "sourceType": "drive",
-  "manifestUrl": "manifest.json",
-  "driveFolderId": "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ",
-  "uploadTargetUrl": "",
-  "driveApiKey": "AIzaSyAmQF3A9MNqKYKnG2MkPFIgTQPgJ71Mnz8",
-  "pollSeconds": 45,
-  "contactBar": {
-    "enabled": true,
-    "mode": "fixed",
-    "speed": 28,
-    "items": [
-      {
-        "type": "instagram",
-        "label": "Instagram",
-        "value": "@tu_instagram",
-        "url": ""
-      },
-      {
-        "type": "tiktok",
-        "label": "TikTok",
-        "value": "@tu_tiktok",
-        "url": ""
-      },
-      {
-        "type": "email",
-        "label": "Correo",
-        "value": "correo@ejemplo.com",
-        "url": ""
-      },
-      {
-        "type": "phone",
-        "label": "Contacto",
-        "value": "+34 600 000 000",
-        "url": ""
-      }
-    ]
-  }
+﻿{
+    "intervalSeconds":  5,
+    "transitionMs":  1200,
+    "transitionType":  "fade",
+    "playOrder":  "sequential",
+    "decorativeBackground":  true,
+    "sourceType":  "drive",
+    "manifestUrl":  "manifest.json",
+    "driveFolderId":  "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ",
+    "uploadTargetUrl":  "",
+    "driveApiKey":  "AIzaSyAmQF3A9MNqKYKnG2MkPFIgTQPgJ71Mnz8",
+    "pollSeconds":  45,
+    "gallery":  {
+                    "rootSectionTitle":  "Fotos recientes",
+                    "emptyMessage":  "Todavia no hay eventos publicados.",
+                    "sections":  [
+
+                                 ]
+                },
+    "contactBar":  {
+                       "enabled":  true,
+                       "mode":  "fixed",
+                       "speed":  28,
+                       "items":  [
+                                     {
+                                         "type":  "instagram",
+                                         "label":  "Instagram",
+                                         "value":  "@tu_instagram",
+                                         "url":  ""
+                                     },
+                                     {
+                                         "type":  "tiktok",
+                                         "label":  "TikTok",
+                                         "value":  "@tu_tiktok",
+                                         "url":  ""
+                                     },
+                                     {
+                                         "type":  "email",
+                                         "label":  "Correo",
+                                         "value":  "correo@ejemplo.com",
+                                         "url":  ""
+                                     },
+                                     {
+                                         "type":  "phone",
+                                         "label":  "Contacto",
+                                         "value":  "+34 600 000 000",
+                                         "url":  ""
+                                     }
+                                 ]
+                   },
+    "background":  {
+                       "mode":  "default",
+                       "color":  "#050505",
+                       "imageDataUrl":  "",
+                       "imageBrightness":  70,
+                       "imageOpacity":  100,
+                       "imageBlur":  0,
+                       "imageSaturation":  100
+                   },
+    "supabase":  {
+                     "url":  "https://ixhydcablbjkkzchyjbq.supabase.co",
+                     "publishableKey":  "sb_publishable_lyR6MvOSNxbqdD21XN23fQ_w8jXqgtq"
+                 }
 }

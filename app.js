@@ -1,10 +1,14 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const SETTINGS_KEY = "superrutas.viewer.settings";
   const CACHE_KEY = "superrutas.viewer.images";
-  const CONFIG_URL = "config.json";
+  const SCRIPT = document.currentScript;
+  const CONFIG_URL = SCRIPT?.dataset.configUrl || "config.json";
   const DEFAULT_DRIVE_FOLDER_ID = "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ";
+  const LOGIN_ALIASES = {
+    admin: "anderibanez123@gmail.com"
+  };
   const DEFAULT_SETTINGS = {
     intervalSeconds: 5,
     transitionMs: 1200,
@@ -17,6 +21,19 @@
     uploadTargetUrl: "",
     driveApiKey: "",
     pollSeconds: 45,
+    supabase: {
+      url: "https://ixhydcablbjkkzchyjbq.supabase.co",
+      publishableKey: "sb_publishable_lyR6MvOSNxbqdD21XN23fQ_w8jXqgtq"
+    },
+    background: {
+      mode: "default",
+      color: "#050505",
+      imageDataUrl: "",
+      imageBrightness: 70,
+      imageOpacity: 100,
+      imageBlur: 0,
+      imageSaturation: 100
+    },
     contactBar: {
       enabled: true,
       mode: "fixed",
@@ -37,8 +54,15 @@
   const fullscreenButton = document.getElementById("fullscreenButton");
   const wakeButton = document.getElementById("wakeButton");
   const contactBar = document.getElementById("contactBar");
+  const customBackground = document.getElementById("customBackground");
+  const presentationLock = document.getElementById("presentationLock");
+  const presentationLoginForm = document.getElementById("presentationLoginForm");
+  const presentationEmailInput = document.getElementById("presentationEmailInput");
+  const presentationPasswordInput = document.getElementById("presentationPasswordInput");
+  const presentationAuthStatus = document.getElementById("presentationAuthStatus");
 
   let settings = normalizeSettings({});
+  let supabaseClient = null;
   let images = [];
   let index = 0;
   let timerId = null;
@@ -46,11 +70,26 @@
   let resizeId = null;
   let transitioning = false;
   let lastStageTap = 0;
+  let viewerStarted = false;
 
   init();
 
   async function init() {
     settings = await readSettings();
+    setupSupabase(settings.supabase);
+    if (!await canOpenPresentation()) {
+      showPresentationLock();
+      return;
+    }
+    startViewer();
+  }
+
+  function startViewer() {
+    if (viewerStarted) {
+      return;
+    }
+    viewerStarted = true;
+    hidePresentationLock();
     applySettings();
     fullscreenButton.addEventListener("click", enterPresentationMode);
     currentImage.addEventListener("dblclick", enterPresentationMode);
@@ -73,6 +112,86 @@
       }
     });
     refreshImages(false);
+  }
+
+  function setupSupabase(config) {
+    const supabaseConfig = {
+      ...DEFAULT_SETTINGS.supabase,
+      ...(config || {})
+    };
+
+    if (!window.supabase || !supabaseConfig.url || !supabaseConfig.publishableKey) {
+      supabaseClient = null;
+      return;
+    }
+
+    supabaseClient = window.supabase.createClient(
+      supabaseConfig.url,
+      supabaseConfig.publishableKey,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true
+        }
+      }
+    );
+  }
+
+  async function canOpenPresentation() {
+    if (!presentationLock) {
+      return true;
+    }
+    if (!supabaseClient) {
+      return false;
+    }
+    const { data, error } = await supabaseClient.auth.getSession();
+    return !error && Boolean(data.session);
+  }
+
+  function showPresentationLock() {
+    if (!presentationLock) {
+      return;
+    }
+    presentationLock.classList.remove("hidden");
+    presentationLoginForm.addEventListener("submit", handlePresentationLogin);
+    if (!supabaseClient) {
+      presentationAuthStatus.textContent = "No se pudo cargar Supabase.";
+    }
+  }
+
+  function hidePresentationLock() {
+    if (presentationLock) {
+      presentationLock.classList.add("hidden");
+    }
+  }
+
+  async function handlePresentationLogin(event) {
+    event.preventDefault();
+    if (!supabaseClient) {
+      presentationAuthStatus.textContent = "Supabase no esta disponible.";
+      return;
+    }
+
+    presentationAuthStatus.textContent = "Entrando...";
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email: getLoginEmail(presentationEmailInput.value),
+      password: presentationPasswordInput.value
+    });
+
+    if (error) {
+      presentationPasswordInput.value = "";
+      presentationAuthStatus.textContent = "Usuario o contrasena incorrectos.";
+      return;
+    }
+
+    presentationPasswordInput.value = "";
+    presentationAuthStatus.textContent = "";
+    startViewer();
+  }
+
+  function getLoginEmail(value) {
+    const login = value.trim().toLowerCase();
+    return LOGIN_ALIASES[login] || login;
   }
 
   async function readSettings() {
@@ -123,6 +242,14 @@
         ...DEFAULT_SETTINGS.contactBar,
         ...(saved.contactBar || {}),
         items: Array.isArray(saved.contactBar?.items) ? saved.contactBar.items : DEFAULT_SETTINGS.contactBar.items
+      },
+      supabase: {
+        ...DEFAULT_SETTINGS.supabase,
+        ...(saved.supabase || {})
+      },
+      background: {
+        ...DEFAULT_SETTINGS.background,
+        ...(saved.background || {})
       }
     };
   }
@@ -130,6 +257,7 @@
   function applySettings() {
     viewer.dataset.effect = settings.transitionType;
     viewer.classList.toggle("no-decor", !settings.decorativeBackground);
+    applyBackground();
     [currentImage, nextImage].forEach((image) => {
       image.style.transitionDuration = `${settings.transitionMs}ms`;
     });
@@ -137,6 +265,30 @@
     window.clearInterval(pollId);
     pollId = window.setInterval(() => refreshImages(true), settings.pollSeconds * 1000);
     scheduleNext();
+  }
+
+  function applyBackground() {
+    const background = settings.background || DEFAULT_SETTINGS.background;
+    customBackground.classList.remove("is-visible");
+    customBackground.style.backgroundImage = "";
+
+    if (background.mode === "solid") {
+      viewer.style.background = background.color || DEFAULT_SETTINGS.background.color;
+      return;
+    }
+
+    if (background.mode === "image" && background.imageDataUrl) {
+      viewer.style.background = background.color || DEFAULT_SETTINGS.background.color;
+      customBackground.style.backgroundImage = `url("${background.imageDataUrl}")`;
+      customBackground.style.setProperty("--bg-brightness", `${background.imageBrightness}%`);
+      customBackground.style.setProperty("--bg-opacity", `${background.imageOpacity / 100}`);
+      customBackground.style.setProperty("--bg-blur", `${background.imageBlur}px`);
+      customBackground.style.setProperty("--bg-saturation", `${background.imageSaturation}%`);
+      customBackground.classList.add("is-visible");
+      return;
+    }
+
+    viewer.style.background = "";
   }
 
   function renderContactBar() {
@@ -486,3 +638,4 @@
     status.classList.add("is-hidden");
   }
 })();
+

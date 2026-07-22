@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -30,6 +30,10 @@
       line-height: 1.55;
     }
 
+    body.guide-locked .page {
+      display: none;
+    }
+
     a {
       color: var(--white);
       text-decoration-color: rgba(225, 15, 33, 0.8);
@@ -40,6 +44,90 @@
       width: min(1040px, calc(100% - 32px));
       margin: 0 auto;
       padding: 44px 0 64px;
+    }
+
+    .guide-lock {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .guide-lock.hidden {
+      display: none;
+    }
+
+    .guide-lock-card {
+      width: min(460px, 100%);
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(15, 15, 17, 0.94);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    }
+
+    .guide-lock-card img {
+      width: 86px;
+      height: 86px;
+      object-fit: contain;
+      margin-bottom: 18px;
+    }
+
+    .guide-form {
+      display: grid;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .guide-form label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .guide-form input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.04);
+      font: inherit;
+    }
+
+    .guide-form button,
+    .guide-link {
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font: inherit;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .guide-form button {
+      background: var(--red);
+    }
+
+    .guide-link {
+      margin-top: 12px;
+      border-color: var(--line);
+      background: transparent;
+    }
+
+    .guide-status {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .hero {
@@ -241,7 +329,27 @@
     }
   </style>
 </head>
-<body>
+<body class="guide-locked">
+  <section id="guideLock" class="guide-lock" aria-label="Acceso privado a la guia">
+    <div class="guide-lock-card">
+      <img src="assets/logo.png" alt="ByAlaitz">
+      <h1>Guia privada</h1>
+      <p>Acceso reservado para quien gestione el visor y el panel admin.</p>
+      <form id="guideLoginForm" class="guide-form">
+        <label>
+          Usuario o email
+          <input id="guideEmailInput" type="text" autocomplete="username" placeholder="admin" required>
+        </label>
+        <label>
+          Contrasena
+          <input id="guidePasswordInput" type="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Entrar</button>
+        <span id="guideAuthStatus" class="guide-status" role="status"></span>
+      </form>
+      <a class="guide-link" href="admin/">Ir al admin</a>
+    </div>
+  </section>
   <main class="page">
     <section class="hero">
       <div class="brand">
@@ -249,7 +357,7 @@
         <div>
           <span class="eyebrow">Guia rapida</span>
           <h1>Visor fotografico ByAlaitz</h1>
-          <p class="subtitle">Una pantalla limpia para enseñar las fotos del evento en bucle, con carga desde Google Drive y controles sencillos desde el panel de administracion.</p>
+          <p class="subtitle">Una galeria publica por eventos y un visor privado para enseÃ±ar las fotos del stand en bucle, con carga desde Google Drive y controles sencillos desde el panel de administracion.</p>
         </div>
       </div>
     </section>
@@ -259,9 +367,10 @@
         <span class="eyebrow">Enlaces</span>
         <h2>Donde entrar</h2>
         <ul>
-          <li>Visor publico: <code>https://anderibanez123.github.io/ByAlaitz_VisorFotografico/</code></li>
+          <li>Galeria publica: <code>https://anderibanez123.github.io/ByAlaitz_VisorFotografico/</code></li>
+          <li>Visor privado de stand: <code>/visor/</code> al final de la URL.</li>
           <li>Panel admin: <code>/admin/</code> al final de la URL.</li>
-          <li>Clave del panel: <code>stand2026</code></li>
+          <li>Acceso privado: usuario <code>admin</code> y la contrasena configurada en Supabase Auth.</li>
         </ul>
         <p class="callout">Tambien puedes entrar al admin tocando el logo pequeno de la esquina inferior derecha del visor.</p>
       </article>
@@ -270,10 +379,10 @@
         <span class="eyebrow">Uso diario</span>
         <h2>Subir fotos</h2>
         <ol class="steps">
-          <li class="step"><span class="number">1</span><span>Abre la carpeta de Google Drive preparada para el visor.</span></li>
-          <li class="step"><span class="number">2</span><span>Sube las fotos desde movil, tablet u ordenador.</span></li>
-          <li class="step"><span class="number">3</span><span>Espera unos segundos. La web revisa la carpeta automaticamente.</span></li>
-          <li class="step"><span class="number">4</span><span>Las imagenes nuevas aparecen en la presentacion sin tocar codigo.</span></li>
+          <li class="step"><span class="number">1</span><span>Abre la carpeta principal de Google Drive.</span></li>
+          <li class="step"><span class="number">2</span><span>Crea una carpeta por evento y sube dentro sus fotos.</span></li>
+          <li class="step"><span class="number">3</span><span>Las fotos sueltas en la carpeta principal aparecen como fotos recientes.</span></li>
+          <li class="step"><span class="number">4</span><span>Desde admin tambien puedes crear galerias manuales y elegir que fotos aparecen en cada una.</span></li>
         </ol>
       </article>
 
@@ -281,7 +390,7 @@
         <span class="eyebrow">Presentacion</span>
         <h2>Como dejarlo funcionando en el stand</h2>
         <ol class="steps">
-          <li class="step"><span class="number">1</span><span>Abre el visor publico en Chrome, Edge o Safari.</span></li>
+          <li class="step"><span class="number">1</span><span>Abre el visor privado <code>/visor/</code> en Chrome, Edge o Safari.</span></li>
           <li class="step"><span class="number">2</span><span>Haz doble click o doble toque sobre la foto para entrar en pantalla completa. Tambien puedes usar el boton <code>FS</code>.</span></li>
           <li class="step"><span class="number">3</span><span>Para salir de pantalla completa, pulsa <code>Esc</code>.</span></li>
           <li class="step"><span class="number">4</span><span>Si necesitas ajustar algo, toca el logo de abajo a la derecha y entra al admin.</span></li>
@@ -292,11 +401,14 @@
         <span class="eyebrow">Panel admin</span>
         <h2>Opciones principales</h2>
         <ul>
+          <li>El panel se divide en Presentacion, Imagenes, Galeria publica, Aspecto y Contacto.</li>
           <li>Tiempo entre fotos.</li>
           <li>Velocidad de transicion.</li>
           <li>Efectos: fundido, deslizamiento, zoom, barrido, desenfoque, giro, volteo 3D o corte directo.</li>
           <li>Orden secuencial o aleatorio.</li>
           <li>Fondo decorativo activado o desactivado.</li>
+          <li>Fondo de pantalla por defecto, color solido o imagen personalizada con brillo, opacidad, desenfoque y saturacion.</li>
+          <li>Galeria publica: crear eventos y seleccionar fotos concretas de Drive.</li>
           <li>Frecuencia de actualizacion de Google Drive.</li>
         </ul>
       </article>
@@ -324,6 +436,7 @@
         <ul>
           <li>Si no salen fotos, revisa que la carpeta de Drive tenga imagenes directamente dentro.</li>
           <li>Si Drive no carga, revisa que la API key siga activa y permitida para la web.</li>
+          <li>Si no puedes entrar al admin, revisa que el usuario exista en Supabase > Authentication > Users.</li>
           <li>Si un cambio no aparece, refresca con <code>Ctrl + F5</code>.</li>
           <li>Si el QR no deja subir, abre la carpeta con una cuenta que tenga permiso de edicion.</li>
         </ul>
@@ -332,5 +445,77 @@
 
     <p class="footer">Fotografias de ByAlaitz - Web por anderibanez_</p>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const LOGIN_ALIASES = {
+        admin: "anderibanez123@gmail.com"
+      };
+      const SUPABASE_URL = "https://ixhydcablbjkkzchyjbq.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_lyR6MvOSNxbqdD21XN23fQ_w8jXqgtq";
+
+      const lock = document.getElementById("guideLock");
+      const form = document.getElementById("guideLoginForm");
+      const emailInput = document.getElementById("guideEmailInput");
+      const passwordInput = document.getElementById("guidePasswordInput");
+      const status = document.getElementById("guideAuthStatus");
+      let supabaseClient = null;
+
+      init();
+
+      async function init() {
+        if (!window.supabase) {
+          status.textContent = "No se pudo cargar Supabase.";
+          return;
+        }
+
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true
+          }
+        });
+
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (!error && data.session) {
+          unlockGuide();
+          return;
+        }
+
+        form.addEventListener("submit", handleLogin);
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+        status.textContent = "Entrando...";
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email: getLoginEmail(emailInput.value),
+          password: passwordInput.value
+        });
+
+        if (error) {
+          passwordInput.value = "";
+          status.textContent = "Usuario o contrasena incorrectos.";
+          return;
+        }
+
+        unlockGuide();
+      }
+
+      function unlockGuide() {
+        document.body.classList.remove("guide-locked");
+        lock.classList.add("hidden");
+      }
+
+      function getLoginEmail(value) {
+        const login = value.trim().toLowerCase();
+        return LOGIN_ALIASES[login] || login;
+      }
+    })();
+  </script>
 </body>
 </html>
+
+

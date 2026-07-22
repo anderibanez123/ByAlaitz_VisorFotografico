@@ -1,19 +1,22 @@
-# SuperRutas - Visor web de fotografias para stand
+﻿# SuperRutas - Visor web de fotografias para stand
 
 ## Objetivo
 
-Este proyecto es una aplicacion web estatica para mostrar fotografias en bucle durante un evento de coches. Esta pensada para publicarse en GitHub Pages y funcionar en una tablet, portatil o monitor del stand.
+Este proyecto es una aplicacion web estatica con dos experiencias: una galeria publica por eventos para compartir mediante QR y un visor privado de presentacion para stands. Esta pensada para publicarse en GitHub Pages y funcionar en movil, tablet, portatil o monitor.
 
 Fecha objetivo indicada por el usuario: sabado 25 de julio de 2026. La idea es dejar margen para probar varios dias antes del evento.
 
 ## Estructura
 
-- `index.html`: vista publica del visor. Debe quedar limpia para espectadores.
+- `index.html`: galeria publica por eventos. Es la URL que se puede compartir con QR.
+- `gallery.js`: logica de la galeria publica; lee carpetas de Google Drive como secciones/eventos.
+- `visor/index.html`: visor privado de presentacion para stand. Requiere Supabase Auth antes de cargar imagenes.
 - `admin/index.html`: panel oculto de configuracion local.
 - `styles.css`: estilos compartidos de visor y panel.
-- `app.js`: logica de presentacion, polling, transiciones, pantalla completa y cache de imagenes.
+- `app.js`: logica del visor privado, login, polling, transiciones, pantalla completa y cache de imagenes.
 - `admin.js`: logica del panel de configuracion.
 - `config.json`: configuracion base compartida para cualquier persona que abra la app.
+- `Guia_uso_ByAlaitz.html`: guia privada de uso. Tiene login Supabase propio y esta pensada para quien gestione el admin/visor.
 - `assets/drive-upload-qr.png`: QR local para abrir la carpeta de Google Drive configurada.
 - `assets/favicon.png` y `assets/favicon-32.png`: iconos de pestana generados desde el logo.
 - `assets/logo.png`: logo usado por el visor y el admin en produccion.
@@ -25,7 +28,9 @@ Fecha objetivo indicada por el usuario: sabado 25 de julio de 2026. La idea es d
 
 ## Funcionamiento
 
-El visor muestra una imagen a la vez con `object-fit: contain`, por lo que no recorta fotografias. Solo mantiene la foto actual y precarga la siguiente para evitar descargar toda la coleccion al iniciar.
+La URL raiz `/` muestra una galeria publica. Desde admin se pueden crear galerias/eventos manuales y seleccionar que fotos de la carpeta principal de Drive aparecen en cada una. Si no hay galerias manuales configuradas, cada subcarpeta dentro de la carpeta principal de Google Drive se interpreta como un evento/seccion, y las imagenes sueltas de la carpeta principal se muestran como `Fotos recientes`.
+
+El visor privado vive en `/visor/`. Antes de cargar fotos exige Supabase Auth; el alias corto `admin` se resuelve como `anderibanez123@gmail.com`. El visor muestra una imagen a la vez con `object-fit: contain`, por lo que no recorta fotografias. Solo mantiene la foto actual y precarga la siguiente para evitar descargar toda la coleccion al iniciar.
 
 La configuracion se guarda en `localStorage` bajo la clave:
 
@@ -45,29 +50,28 @@ superrutas.viewer.images
 
 Si falla la conexion con Google Drive o el endpoint configurado, el visor usa esa lista cacheada para seguir funcionando.
 
+La configuracion del fondo tambien forma parte de la configuracion local. Las imagenes personalizadas se reducen en el navegador antes de guardarse para no cargar demasiado `localStorage`.
+
 La barra superior de contacto forma parte de la misma configuracion local. Cada item tiene `type`, `label`, `value`, `url` y `enabled`. En el visor se muestra como icono + valor, sin etiquetas largas. Si `url` esta vacio, el visor genera automaticamente `mailto:` para correo y `tel:` para telefono.
 
 ## Configuracion disponible
 
 Desde `/admin/` se puede ajustar:
 
+- El panel esta organizado por secciones: Presentacion, Imagenes, Galeria publica, Aspecto y Contacto. La navegacion superior del panel salta directamente a cada bloque.
 - Tiempo entre fotos: 1 a 60 segundos.
 - Velocidad de transicion: 150 a 5000 ms.
 - Efecto: fundido, deslizamiento horizontal, deslizamiento vertical, zoom suave, barrido lateral, desenfoque, elevacion suave, giro deportivo, volteo 3D o corte directo.
 - Orden: secuencial o aleatorio.
 - Fondo decorativo: activado o desactivado.
+- Fondo de pantalla: por defecto, color solido o imagen personalizada con brillo, opacidad, desenfoque y saturacion.
 - Fuente de imagenes: manifest local, Google Drive publico o endpoint JSON publico.
 - Polling: 30 a 120 segundos.
 - Barra superior de contacto: activar/desactivar, texto fijo o deslizante, velocidad del desplazamiento y lista editable de redes/contacto.
 - QR de subida: el admin muestra un QR pequeno que abre la URL de subida desde otro dispositivo. Si `URL para QR de subida` esta vacia, abre la carpeta de Drive configurada. Para la carpeta principal actual se usa `assets/drive-upload-qr.png`; si se cambia el destino, el admin intenta generar el QR desde un servicio externo.
+- Galeria publica: crear secciones/eventos y seleccionar las fotos de Drive que aparecen en cada una. Usa las mismas fotos que la presentacion.
 
-La clave local inicial del panel es:
-
-```text
-stand2026
-```
-
-No es seguridad real de servidor. Solo evita toques accidentales en el dispositivo del stand.
+El panel admin, el visor privado y la guia de uso usan Supabase Auth. Los usuarios se gestionan desde Supabase > Authentication > Users. El alias corto `admin` se resuelve en `admin.js`, `app.js` y `Guia_uso_ByAlaitz.html` como `anderibanez123@gmail.com` para que el login sea comodo sin exponer claves de servidor. La web solo guarda en frontend la URL del proyecto y la publishable key; no debe incluir connection strings, service role keys ni claves secretas.
 
 ## Fuentes de imagenes
 
@@ -134,7 +138,7 @@ Ejemplos validos:
 
 En el visor hay un boton discreto de pantalla completa y tambien se puede entrar con doble click o doble toque sobre la fotografia. Al activarlo se ocultan los controles visibles y queda solo la fotografia, el fondo y el logo. La tecla `Esc` sale de pantalla completa. En la esquina inferior derecha queda un boton casi invisible para recuperar el control si hace falta.
 
-El logo de la esquina inferior derecha tambien funciona como acceso discreto a `/admin/`. En el panel admin hay enlaces de vuelta al visor tanto en la pantalla de clave como en la pantalla de configuracion.
+El logo de la esquina inferior derecha tambien funciona como acceso discreto a `/admin/`. En el panel admin hay enlaces de vuelta al visor tanto en la pantalla de login como en la pantalla de configuracion.
 
 El visor muestra una firma discreta abajo a la izquierda: fotografias de ByAlaitz y web por anderibanez_.
 
@@ -143,4 +147,6 @@ El visor muestra una firma discreta abajo a la izquierda: fotografias de ByAlait
 - Las fotos locales actuales son pesadas. Para evento real conviene exportarlas a 2000-2400 px de lado largo y calidad 80-85.
 - Para GitHub Pages con `/admin/`, mantener la carpeta `admin/index.html`.
 - Si se cambia el nombre o ubicacion del logo, actualizar `index.html`, `admin/index.html` y este documento.
-- Si se necesita contrasena real, hace falta backend o proveedor externo; GitHub Pages por si solo no protege rutas.
+- La proteccion del admin depende de Supabase Auth. GitHub Pages no debe contener secretos de servidor.
+
+

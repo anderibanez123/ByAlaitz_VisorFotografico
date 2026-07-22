@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <title>ByAlaitz | Visor privado</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="../assets/favicon.png">
+  <link rel="stylesheet" href="../styles.css?v=20260722-gallery">
+</head>
+
+<body class="screen">
+  <main id="viewer" class="viewer" aria-live="polite">
+    <section id="presentationLock" class="presentation-lock" aria-label="Acceso privado al visor">
+      <div class="presentation-lock-card">
+        <img class="admin-logo" src="../assets/logo.png" alt="SuperRutas">
+        <h1>Visor privado</h1>
+        <p>Acceso reservado para la presentacion del stand.</p>
+        <form id="presentationLoginForm" class="form-grid">
+          <label>
+            Usuario o email
+            <input id="presentationEmailInput" type="text" autocomplete="username" placeholder="admin" required>
+          </label>
+          <label>
+            Contrasena
+            <input id="presentationPasswordInput" type="password" autocomplete="current-password" required>
+          </label>
+          <button type="submit" class="primary-button">Entrar</button>
+          <span id="presentationAuthStatus" class="field-note" role="status"></span>
+        </form>
+        <a class="ghost-link lock-back-link" href="../">Volver a la galeria</a>
+      </div>
+    </section>
+    <div id="customBackground" class="custom-background" aria-hidden="true"></div>
+    <div id="decor" class="decor" aria-hidden="true"></div>
+    <aside id="contactBar" class="contact-bar" aria-label="Informacion de contacto"></aside>
+    <div id="stage" class="stage">
+      <img id="currentImage" class="slide current" alt="">
+      <img id="nextImage" class="slide next" alt="">
+    </div>
+    <a class="brand-link" href="../admin/" aria-label="Abrir panel de administracion" title="Admin">
+      <img class="brand-mark" src="../assets/logo.png" alt="SuperRutas">
+    </a>
+    <p class="credit-line">Fotografias de ByAlaitz - Web por anderibanez_</p>
+    <div id="status" class="viewer-status">Cargando fotografias...</div>
+    <button id="fullscreenButton" class="floating-action" type="button" aria-label="Pantalla completa"
+      title="Pantalla completa">FS</button>
+    <button id="wakeButton" class="wake-action" type="button" aria-label="Mostrar control"
+      title="Mostrar control"></button>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../app.js?v=20260722-gallery" data-config-url="../config.json"></script>
+</body>
+
+</html>

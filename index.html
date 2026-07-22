@@ -5,31 +5,47 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050505">
-  <title>ByAlaitz | Visor de fotografias</title>
+  <title>ByAlaitz | Galeria de eventos</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="apple-touch-icon" href="assets/favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260721-qr">
+  <link rel="stylesheet" href="styles.css?v=20260722-gallery">
 </head>
 
-<body class="screen">
-  <main id="viewer" class="viewer" aria-live="polite">
-    <div id="decor" class="decor" aria-hidden="true"></div>
-    <aside id="contactBar" class="contact-bar" aria-label="Informacion de contacto"></aside>
-    <div id="stage" class="stage">
-      <img id="currentImage" class="slide current" alt="">
-      <img id="nextImage" class="slide next" alt="">
+<body class="gallery-screen">
+  <header class="gallery-header">
+    <div class="gallery-brand">
+      <img src="assets/logo.png" alt="ByAlaitz">
+      <div>
+        <p class="gallery-kicker">Fotografia de eventos</p>
+        <h1>Galeria ByAlaitz</h1>
+      </div>
     </div>
-      <a class="brand-link" href="admin/" aria-label="Abrir panel de administracion" title="Admin">
-        <img class="brand-mark" src="assets/logo.png" alt="SuperRutas">
-      </a>
-      <p class="credit-line">Fotografias de ByAlaitz - Web por anderibanez_</p>
-      <div id="status" class="viewer-status">Cargando fotografias...</div>
-    <button id="fullscreenButton" class="floating-action" type="button" aria-label="Pantalla completa"
-      title="Pantalla completa">FS</button>
-    <button id="wakeButton" class="wake-action" type="button" aria-label="Mostrar control"
-      title="Mostrar control"></button>
+    <nav id="galleryEventNav" class="gallery-event-nav" aria-label="Eventos"></nav>
+  </header>
+
+  <main class="gallery-shell">
+    <section class="gallery-intro">
+      <p>Fotos clasificadas por eventos, listas para ver y compartir desde cualquier dispositivo.</p>
+    </section>
+
+    <div id="galleryStatus" class="gallery-status" role="status">Cargando eventos...</div>
+    <div id="gallerySections" class="gallery-sections"></div>
   </main>
-    <script src="app.js?v=20260721-qr"></script>
+
+  <div id="galleryLightbox" class="gallery-lightbox" aria-hidden="true">
+    <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Cerrar">Cerrar</button>
+    <button id="lightboxPrevious" class="lightbox-nav previous" type="button" aria-label="Foto anterior">Anterior</button>
+    <img id="lightboxImage" alt="">
+    <button id="lightboxNext" class="lightbox-nav next" type="button" aria-label="Foto siguiente">Siguiente</button>
+    <p id="lightboxCaption"></p>
+  </div>
+
+  <footer class="gallery-footer">
+    <span>Fotografias de ByAlaitz</span>
+    <span>Web por anderibanez_</span>
+  </footer>
+
+  <script src="gallery.js?v=20260722-gallery"></script>
 </body>
 
 </html>
