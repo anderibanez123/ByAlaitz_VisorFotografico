@@ -73,6 +73,8 @@ Desde `/admin/` se puede ajustar:
 
 El panel admin, el visor privado y la guia de uso usan Supabase Auth. Los usuarios se gestionan desde Supabase > Authentication > Users. El alias corto `admin` se resuelve internamente en `admin.js`, `app.js` y `Guia_uso_ByAlaitz.html` para que el login sea comodo sin mostrar la cuenta en la interfaz. La web solo guarda en frontend la URL del proyecto y la publishable key; no debe incluir connection strings, service role keys ni claves secretas.
 
+En modo aleatorio, el visor usa una baraja interna: mezcla todas las imagenes y las muestra sin repetir hasta completar la vuelta. El polling de Drive no reinicia la baraja salvo que cambie realmente la lista de imagenes.
+
 ## Fuentes de imagenes
 
 ## Optimizacion de imagenes

@@ -71,6 +71,9 @@
   let lastStageTap = 0;
   let viewerStarted = false;
   let transitionRunId = 0;
+  let randomQueue = [];
+  let imagesSignature = "";
+  let lastAppliedPlayOrder = "";
   const imagePreloadCache = new Map();
 
   init();
@@ -256,8 +259,13 @@
   }
 
   function applySettings() {
+    const playOrderChanged = settings.playOrder !== lastAppliedPlayOrder;
+    lastAppliedPlayOrder = settings.playOrder;
     viewer.dataset.effect = settings.transitionType;
     viewer.classList.toggle("no-decor", !settings.decorativeBackground);
+    if (playOrderChanged) {
+      prepareRandomQueue(index);
+    }
     applyBackground();
     [currentImage, nextImage].forEach((image) => {
       image.style.transitionDuration = `${settings.transitionMs}ms`;
@@ -435,20 +443,35 @@
       if (!freshImages.length) {
         throw new Error("La fuente no contiene imagenes compatibles.");
       }
-      images = freshImages.slice(0, 200);
+      const nextImages = freshImages.slice(0, 200);
+      const nextSignature = getImagesSignature(nextImages);
+      const listChanged = nextSignature !== imagesSignature;
+      images = nextImages;
+      imagesSignature = nextSignature;
       localStorage.setItem(CACHE_KEY, JSON.stringify({ images, savedAt: Date.now() }));
       hideStatus();
       if (!currentImage.src) {
         index = pickStartIndex();
+        prepareRandomQueue(index);
         await showInitialImage();
+      } else if (listChanged) {
+        index = getCurrentImageIndex();
+        prepareRandomQueue(index);
       }
     } catch (error) {
       const cached = readCachedImages();
       if (cached.length) {
+        const cachedSignature = getImagesSignature(cached);
+        const listChanged = cachedSignature !== imagesSignature;
         images = cached;
+        imagesSignature = cachedSignature;
         if (!currentImage.src) {
           index = pickStartIndex();
+          prepareRandomQueue(index);
           await showInitialImage();
+        } else if (listChanged) {
+          index = getCurrentImageIndex();
+          prepareRandomQueue(index);
         }
         showStatus("Sin conexion con la fuente. Mostrando la ultima lista guardada.");
       } else {
@@ -533,8 +556,26 @@
     }
   }
 
+  function getImagesSignature(list) {
+    return list.map((image) => image.id || image.url).join("|");
+  }
+
+  function getCurrentImageIndex() {
+    const currentUrl = currentImage.currentSrc || currentImage.src;
+    const foundIndex = images.findIndex((image) => image.url === currentUrl);
+    return foundIndex >= 0 ? foundIndex : Math.min(index, Math.max(0, images.length - 1));
+  }
+
   function pickStartIndex() {
     return settings.playOrder === "random" ? Math.floor(Math.random() * images.length) : 0;
+  }
+
+  function prepareRandomQueue(currentIndex = index) {
+    if (settings.playOrder !== "random") {
+      randomQueue = [];
+      return;
+    }
+    randomQueue = shuffleIndices(images.length).filter((imageIndex) => imageIndex !== currentIndex);
   }
 
   async function showInitialImage() {
@@ -615,14 +656,10 @@
 
   function getNextIndex() {
     if (settings.playOrder === "random") {
-      if (images.length < 3) {
-        return index === 0 ? 1 : 0;
+      if (!randomQueue.length) {
+        prepareRandomQueue(index);
       }
-      let next = index;
-      while (next === index) {
-        next = Math.floor(Math.random() * images.length);
-      }
-      return next;
+      return randomQueue.shift() ?? index;
     }
     return (index + 1) % images.length;
   }
@@ -631,7 +668,29 @@
     if (images.length < 2) {
       return;
     }
-    loadImage(images[getNextIndex()].url).catch(() => {});
+    const nextIndex = peekNextIndex();
+    if (nextIndex !== index) {
+      loadImage(images[nextIndex].url).catch(() => {});
+    }
+  }
+
+  function peekNextIndex() {
+    if (settings.playOrder === "random") {
+      if (!randomQueue.length) {
+        prepareRandomQueue(index);
+      }
+      return randomQueue[0] ?? index;
+    }
+    return (index + 1) % images.length;
+  }
+
+  function shuffleIndices(length) {
+    const list = Array.from({ length }, (_unused, imageIndex) => imageIndex);
+    for (let itemIndex = list.length - 1; itemIndex > 0; itemIndex -= 1) {
+      const randomIndex = Math.floor(Math.random() * (itemIndex + 1));
+      [list[itemIndex], list[randomIndex]] = [list[randomIndex], list[itemIndex]];
+    }
+    return list;
   }
 
   function loadImage(url) {
