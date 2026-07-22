@@ -27,6 +27,8 @@
   let settings = DEFAULT_SETTINGS;
   let galleryImages = [];
   let activeImageIndex = 0;
+  let idlePreloadHandle = null;
+  const fullImageCache = new Map();
 
   init();
 
@@ -213,6 +215,7 @@
 
     hideStatus();
     sections.forEach((section) => renderSection(section));
+    scheduleFullImagePreload();
   }
 
   function renderSection(section) {
@@ -301,6 +304,7 @@
     renderLightboxImage();
     lightbox.classList.add("is-open");
     lightbox.setAttribute("aria-hidden", "false");
+    preloadLightboxNeighbors(index);
   }
 
   function closeLightbox() {
@@ -312,14 +316,89 @@
   function moveLightbox(direction) {
     activeImageIndex = (activeImageIndex + direction + galleryImages.length) % galleryImages.length;
     renderLightboxImage();
+    preloadLightboxNeighbors(activeImageIndex);
   }
 
   function renderLightboxImage() {
     const image = galleryImages[activeImageIndex];
+    lightbox.classList.add("is-loading");
     lightboxImage.src = image.fullUrl;
     lightboxImage.alt = image.title || "Fotografia de evento";
     lightboxImage.draggable = false;
     lightboxCaption.textContent = `${image.sectionTitle} - ${image.title || "Fotografia"}`;
+    preloadFullImage(image.fullUrl).finally(() => {
+      if (lightboxImage.src === new URL(image.fullUrl, window.location.href).href) {
+        lightbox.classList.remove("is-loading");
+      }
+    });
+  }
+
+  function scheduleFullImagePreload() {
+    if (idlePreloadHandle) {
+      return;
+    }
+    const preloadQueue = galleryImages.slice(0, 18);
+    const run = () => preloadQueueNext(preloadQueue);
+    if ("requestIdleCallback" in window) {
+      idlePreloadHandle = window.requestIdleCallback(run, { timeout: 1600 });
+    } else {
+      idlePreloadHandle = window.setTimeout(run, 450);
+    }
+  }
+
+  function preloadQueueNext(queue) {
+    idlePreloadHandle = null;
+    const next = queue.shift();
+    if (!next) {
+      return;
+    }
+    preloadFullImage(next.fullUrl).finally(() => {
+      const run = () => preloadQueueNext(queue);
+      if ("requestIdleCallback" in window) {
+        idlePreloadHandle = window.requestIdleCallback(run, { timeout: 1600 });
+      } else {
+        idlePreloadHandle = window.setTimeout(run, 250);
+      }
+    });
+  }
+
+  function preloadLightboxNeighbors(index) {
+    [-1, 1, 2].forEach((offset) => {
+      const image = galleryImages[(index + offset + galleryImages.length) % galleryImages.length];
+      if (image) {
+        preloadFullImage(image.fullUrl).catch(() => {});
+      }
+    });
+  }
+
+  function preloadFullImage(url) {
+    if (!url) {
+      return Promise.reject(new Error("Imagen sin URL."));
+    }
+    if (fullImageCache.has(url)) {
+      return fullImageCache.get(url);
+    }
+    const promise = new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = async () => {
+        try {
+          if (image.decode) {
+            await image.decode();
+          }
+        } catch (error) {
+          // La imagen puede estar lista aunque decode no responda.
+        }
+        resolve(image);
+      };
+      image.onerror = reject;
+      image.src = url;
+    });
+    fullImageCache.set(url, promise);
+    if (fullImageCache.size > 24) {
+      const [oldestUrl] = fullImageCache.keys();
+      fullImageCache.delete(oldestUrl);
+    }
+    return promise;
   }
 
   function getDriveFolderId(value) {

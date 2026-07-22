@@ -1163,6 +1163,27 @@ output {
   display: grid;
 }
 
+.gallery-lightbox.is-loading img {
+  opacity: 0.55;
+}
+
+.gallery-lightbox.is-loading::before {
+  content: "Cargando...";
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 31;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 850;
+  background: rgba(0, 0, 0, 0.54);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 .gallery-lightbox::after {
   content: "ByAlaitz";
   position: fixed;
