@@ -971,10 +971,21 @@ output {
   min-width: 0;
 }
 
+.gallery-brand-link {
+  color: var(--white);
+  text-decoration: none;
+}
+
+.gallery-brand-link:hover img,
+.gallery-brand-link:focus-visible img {
+  transform: scale(1.04);
+}
+
 .gallery-brand img {
   width: 54px;
   height: 54px;
   object-fit: contain;
+  transition: transform 180ms ease;
 }
 
 .gallery-kicker {
