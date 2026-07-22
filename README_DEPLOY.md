@@ -26,4 +26,4 @@ Si no quieres escribir la API key manualmente en `config.json`, puedes abrir `/a
 
 ## Supabase Auth
 
-El admin, el visor privado y la guia de uso usan Supabase Auth para iniciar sesion. El usuario corto `admin` se traduce internamente al email `anderibanez123@gmail.com`; crear o actualizar ese usuario desde `Authentication` -> `Users` en Supabase con la contrasena acordada. No subir nunca connection strings, service role keys ni contrasenas de base de datos al repositorio.
+El admin, el visor privado y la guia de uso usan Supabase Auth para iniciar sesion. El usuario corto `admin` se traduce internamente a la cuenta admin configurada en Supabase; crear o actualizar ese usuario desde `Authentication` -> `Users` con la contrasena acordada. No subir nunca connection strings, service role keys ni contrasenas de base de datos al repositorio.

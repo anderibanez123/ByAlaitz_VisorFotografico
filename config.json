@@ -35,12 +35,6 @@
                                          "url":  ""
                                      },
                                      {
-                                         "type":  "email",
-                                         "label":  "Correo",
-                                         "value":  "correo@ejemplo.com",
-                                         "url":  ""
-                                     },
-                                     {
                                          "type":  "phone",
                                          "label":  "Contacto",
                                          "value":  "+34 600 000 000",

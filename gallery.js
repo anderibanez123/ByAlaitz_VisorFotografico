@@ -31,6 +31,7 @@
   init();
 
   async function init() {
+    protectPublicGallery();
     settings = await readSettings();
     bindLightbox();
     try {
@@ -158,9 +159,35 @@
       id: file.id,
       title: cleanImageTitle(file.name),
       thumbnailUrl: `https://drive.google.com/thumbnail?id=${encodeURIComponent(file.id)}&sz=w900`,
-      fullUrl: `https://drive.google.com/thumbnail?id=${encodeURIComponent(file.id)}&sz=w2400`,
+      fullUrl: `https://drive.google.com/thumbnail?id=${encodeURIComponent(file.id)}&sz=w1600`,
       updatedAt: file.modifiedTime || file.createdTime || ""
     }));
+  }
+
+  function protectPublicGallery() {
+    document.addEventListener("contextmenu", (event) => {
+      if (event.target.closest(".gallery-photo, .gallery-lightbox, img")) {
+        event.preventDefault();
+      }
+    });
+    document.addEventListener("dragstart", (event) => {
+      if (event.target.closest(".gallery-photo, .gallery-lightbox, img")) {
+        event.preventDefault();
+      }
+    });
+    document.addEventListener("selectstart", (event) => {
+      if (event.target.closest(".gallery-photo, .gallery-lightbox")) {
+        event.preventDefault();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      const key = event.key.toLowerCase();
+      const blocked = (event.ctrlKey || event.metaKey) && ["s", "p", "u"].includes(key);
+      const devtools = key === "f12" || ((event.ctrlKey || event.metaKey) && event.shiftKey && ["i", "j", "c"].includes(key));
+      if (blocked || devtools) {
+        event.preventDefault();
+      }
+    });
   }
 
   function createDriveListUrl(query, fields, orderBy) {
@@ -229,13 +256,18 @@
 
     const photo = document.createElement("img");
     photo.loading = "lazy";
+    photo.draggable = false;
     photo.src = image.thumbnailUrl;
     photo.alt = image.title || "Fotografia de evento";
 
     const caption = document.createElement("span");
     caption.textContent = image.title;
 
-    button.append(photo, caption);
+    const watermark = document.createElement("span");
+    watermark.className = "gallery-watermark";
+    watermark.textContent = "ByAlaitz";
+
+    button.append(photo, watermark, caption);
     return button;
   }
 
@@ -286,6 +318,7 @@
     const image = galleryImages[activeImageIndex];
     lightboxImage.src = image.fullUrl;
     lightboxImage.alt = image.title || "Fotografia de evento";
+    lightboxImage.draggable = false;
     lightboxCaption.textContent = `${image.sectionTitle} - ${image.title || "Fotografia"}`;
   }
 

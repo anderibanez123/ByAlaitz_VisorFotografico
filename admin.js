@@ -6,7 +6,7 @@
   const DEFAULT_DRIVE_FOLDER_ID = "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ";
   const DEFAULT_DRIVE_QR = "../assets/drive-upload-qr.png";
   const LOGIN_ALIASES = {
-    admin: "anderibanez123@gmail.com"
+    admin: ["anderibanez123", "gmail.com"].join("@")
   };
   const DEFAULT_SETTINGS = {
     intervalSeconds: 5,
@@ -45,7 +45,6 @@
       items: [
         { type: "instagram", label: "Instagram", value: "@tu_instagram", url: "" },
         { type: "tiktok", label: "TikTok", value: "@tu_tiktok", url: "" },
-        { type: "email", label: "Correo", value: "correo@ejemplo.com", url: "" },
         { type: "phone", label: "Contacto", value: "+34 600 000 000", url: "" }
       ]
     }
@@ -219,9 +218,7 @@
   async function showSettings(settings = null, user = null) {
     lockPanel.classList.add("hidden");
     settingsPanel.classList.remove("hidden");
-    if (user?.email) {
-      currentUserEmail.textContent = user.email;
-    }
+    currentUserEmail.textContent = "";
     populate(settings || await readSettings());
   }
 

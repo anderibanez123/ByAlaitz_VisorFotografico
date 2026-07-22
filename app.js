@@ -7,7 +7,7 @@
   const CONFIG_URL = SCRIPT?.dataset.configUrl || "config.json";
   const DEFAULT_DRIVE_FOLDER_ID = "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ";
   const LOGIN_ALIASES = {
-    admin: "anderibanez123@gmail.com"
+    admin: ["anderibanez123", "gmail.com"].join("@")
   };
   const DEFAULT_SETTINGS = {
     intervalSeconds: 5,
@@ -41,7 +41,6 @@
       items: [
         { type: "instagram", label: "Instagram", value: "@tu_instagram", url: "" },
         { type: "tiktok", label: "TikTok", value: "@tu_tiktok", url: "" },
-        { type: "email", label: "Correo", value: "correo@ejemplo.com", url: "" },
         { type: "phone", label: "Contacto", value: "+34 600 000 000", url: "" }
       ]
     }
@@ -71,6 +70,8 @@
   let transitioning = false;
   let lastStageTap = 0;
   let viewerStarted = false;
+  let transitionRunId = 0;
+  const imagePreloadCache = new Map();
 
   init();
 
@@ -439,7 +440,7 @@
       hideStatus();
       if (!currentImage.src) {
         index = pickStartIndex();
-        showInitialImage();
+        await showInitialImage();
       }
     } catch (error) {
       const cached = readCachedImages();
@@ -447,7 +448,7 @@
         images = cached;
         if (!currentImage.src) {
           index = pickStartIndex();
-          showInitialImage();
+          await showInitialImage();
         }
         showStatus("Sin conexion con la fuente. Mostrando la ultima lista guardada.");
       } else {
@@ -536,8 +537,9 @@
     return settings.playOrder === "random" ? Math.floor(Math.random() * images.length) : 0;
   }
 
-  function showInitialImage() {
+  async function showInitialImage() {
     const image = images[index];
+    await loadImage(image.url);
     currentImage.src = image.url;
     currentImage.alt = image.title || "Fotografia del evento";
     preloadNext();
@@ -551,30 +553,49 @@
     }
   }
 
-  function advance() {
+  async function advance() {
     if (transitioning || images.length < 2) {
       scheduleNext();
       return;
     }
 
+    const runId = transitionRunId + 1;
+    transitionRunId = runId;
     const targetIndex = getNextIndex();
     const target = images[targetIndex];
     transitioning = true;
-    nextImage.src = target.url;
-    nextImage.alt = target.title || "Fotografia del evento";
-    nextImage.className = "slide next";
-    currentImage.className = "slide current";
 
-    window.requestAnimationFrame(() => {
+    try {
+      await loadImage(target.url);
+      if (runId !== transitionRunId) {
+        return;
+      }
+
+      viewer.classList.remove("is-transitioning");
+      nextImage.src = target.url;
+      nextImage.alt = target.title || "Fotografia del evento";
+      nextImage.className = "slide next";
+      currentImage.className = "slide current";
+      void nextImage.offsetWidth;
+
+      await nextFrame();
       viewer.classList.add("is-transitioning");
-      window.setTimeout(() => {
-        resetToTargetImage(target);
-        index = targetIndex;
+      await waitForSlideTransition(nextImage, getTransitionDuration() + 180);
+
+      if (runId !== transitionRunId) {
+        return;
+      }
+      resetToTargetImage(target);
+      index = targetIndex;
+      preloadNext();
+    } catch (error) {
+      showStatus("No se pudo preparar la siguiente foto. Reintentando...");
+    } finally {
+      if (runId === transitionRunId) {
         transitioning = false;
-        preloadNext();
         scheduleNext();
-      }, getTransitionDuration() + 60);
-    });
+      }
+    }
   }
 
   function resetToTargetImage(target) {
@@ -610,8 +631,64 @@
     if (images.length < 2) {
       return;
     }
-    const preloader = new Image();
-    preloader.src = images[getNextIndex()].url;
+    loadImage(images[getNextIndex()].url).catch(() => {});
+  }
+
+  function loadImage(url) {
+    if (!url) {
+      return Promise.reject(new Error("Imagen sin URL."));
+    }
+    if (imagePreloadCache.has(url)) {
+      return imagePreloadCache.get(url);
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = async () => {
+        try {
+          if (image.decode) {
+            await image.decode();
+          }
+        } catch (error) {
+          // decode puede fallar aunque la imagen ya este lista para mostrarse.
+        }
+        resolve(image);
+      };
+      image.onerror = reject;
+      image.src = url;
+    });
+
+    imagePreloadCache.set(url, promise);
+    if (imagePreloadCache.size > 24) {
+      const [oldestUrl] = imagePreloadCache.keys();
+      imagePreloadCache.delete(oldestUrl);
+    }
+    return promise;
+  }
+
+  function nextFrame() {
+    return new Promise((resolve) => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(resolve);
+      });
+    });
+  }
+
+  function waitForSlideTransition(element, fallbackMs) {
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) {
+          return;
+        }
+        done = true;
+        element.removeEventListener("transitionend", finish);
+        window.clearTimeout(timeoutId);
+        resolve();
+      };
+      const timeoutId = window.setTimeout(finish, fallbackMs);
+      element.addEventListener("transitionend", finish, { once: true });
+    });
   }
 
   function enterPresentationMode() {

@@ -28,9 +28,9 @@ Fecha objetivo indicada por el usuario: sabado 25 de julio de 2026. La idea es d
 
 ## Funcionamiento
 
-La URL raiz `/` muestra una galeria publica. Desde admin se pueden crear galerias/eventos manuales y seleccionar que fotos de la carpeta principal de Drive aparecen en cada una. Si no hay galerias manuales configuradas, cada subcarpeta dentro de la carpeta principal de Google Drive se interpreta como un evento/seccion, y las imagenes sueltas de la carpeta principal se muestran como `Fotos recientes`.
+La URL raiz `/` muestra una galeria publica. Desde admin se pueden crear galerias/eventos manuales y seleccionar que fotos de la carpeta principal de Drive aparecen en cada una. Si no hay galerias manuales configuradas, cada subcarpeta dentro de la carpeta principal de Google Drive se interpreta como un evento/seccion, y las imagenes sueltas de la carpeta principal se muestran como `Fotos recientes`. La galeria bloquea clic derecho, arrastre, seleccion y atajos comunes de guardado como medida disuasoria; esto no es DRM real, porque cualquier imagen visible en navegador puede ser capturada por usuarios avanzados.
 
-El visor privado vive en `/visor/`. Antes de cargar fotos exige Supabase Auth; el alias corto `admin` se resuelve como `anderibanez123@gmail.com`. El visor muestra una imagen a la vez con `object-fit: contain`, por lo que no recorta fotografias. Solo mantiene la foto actual y precarga la siguiente para evitar descargar toda la coleccion al iniciar.
+El visor privado vive en `/visor/`. Antes de cargar fotos exige Supabase Auth; el alias corto `admin` se resuelve internamente como la cuenta admin de Supabase. El visor muestra una imagen a la vez con `object-fit: contain`, por lo que no recorta fotografias. Solo mantiene la foto actual y precarga/decodifica la siguiente antes de iniciar cada transicion para evitar tirones y dobles efectos visibles.
 
 La configuracion se guarda en `localStorage` bajo la clave:
 
@@ -71,7 +71,7 @@ Desde `/admin/` se puede ajustar:
 - QR de subida: el admin muestra un QR pequeno que abre la URL de subida desde otro dispositivo. Si `URL para QR de subida` esta vacia, abre la carpeta de Drive configurada. Para la carpeta principal actual se usa `assets/drive-upload-qr.png`; si se cambia el destino, el admin intenta generar el QR desde un servicio externo.
 - Galeria publica: crear secciones/eventos y seleccionar las fotos de Drive que aparecen en cada una. Usa las mismas fotos que la presentacion.
 
-El panel admin, el visor privado y la guia de uso usan Supabase Auth. Los usuarios se gestionan desde Supabase > Authentication > Users. El alias corto `admin` se resuelve en `admin.js`, `app.js` y `Guia_uso_ByAlaitz.html` como `anderibanez123@gmail.com` para que el login sea comodo sin exponer claves de servidor. La web solo guarda en frontend la URL del proyecto y la publishable key; no debe incluir connection strings, service role keys ni claves secretas.
+El panel admin, el visor privado y la guia de uso usan Supabase Auth. Los usuarios se gestionan desde Supabase > Authentication > Users. El alias corto `admin` se resuelve internamente en `admin.js`, `app.js` y `Guia_uso_ByAlaitz.html` para que el login sea comodo sin mostrar la cuenta en la interfaz. La web solo guarda en frontend la URL del proyecto y la publishable key; no debe incluir connection strings, service role keys ni claves secretas.
 
 ## Fuentes de imagenes
 

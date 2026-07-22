@@ -337,7 +337,7 @@
       <p>Acceso reservado para quien gestione el visor y el panel admin.</p>
       <form id="guideLoginForm" class="guide-form">
         <label>
-          Usuario o email
+          Usuario
           <input id="guideEmailInput" type="text" autocomplete="username" placeholder="admin" required>
         </label>
         <label>
@@ -451,7 +451,7 @@
       "use strict";
 
       const LOGIN_ALIASES = {
-        admin: "anderibanez123@gmail.com"
+        admin: ["anderibanez123", "gmail.com"].join("@")
       };
       const SUPABASE_URL = "https://ixhydcablbjkkzchyjbq.supabase.co";
       const SUPABASE_KEY = "sb_publishable_lyR6MvOSNxbqdD21XN23fQ_w8jXqgtq";
