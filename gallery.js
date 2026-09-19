@@ -28,7 +28,8 @@
   let galleryImages = [];
   let activeImageIndex = 0;
   let idlePreloadHandle = null;
-  const fullImageCache = new Map();
+  let cardObserver = null;
+  const pendingCards = new Map();
 
   init();
 
@@ -182,14 +183,6 @@
         event.preventDefault();
       }
     });
-    document.addEventListener("keydown", (event) => {
-      const key = event.key.toLowerCase();
-      const blocked = (event.ctrlKey || event.metaKey) && ["s", "p", "u"].includes(key);
-      const devtools = key === "f12" || ((event.ctrlKey || event.metaKey) && event.shiftKey && ["i", "j", "c"].includes(key));
-      if (blocked || devtools) {
-        event.preventDefault();
-      }
-    });
   }
 
   function createDriveListUrl(query, fields, orderBy) {
@@ -258,16 +251,61 @@
     button.addEventListener("click", () => openLightbox(imageIndex));
 
     const photo = document.createElement("img");
-    photo.loading = "lazy";
+    photo.decoding = "async";
     photo.draggable = false;
-    photo.src = image.thumbnailUrl;
     photo.alt = image.title || "Fotografia de evento";
 
     const caption = document.createElement("span");
     caption.textContent = image.title;
 
     button.append(photo, caption);
+    observeCard(button, photo, image);
     return button;
+  }
+
+  // Marcar la foto cuesta descargarla y redibujarla, asi que solo se hace
+  // cuando la tarjeta se acerca a la pantalla.
+  function observeCard(card, photo, image) {
+    const load = () => {
+      prepareImage(image.thumbnailUrl)
+        .then((url) => { photo.src = url; })
+        .catch(() => {});
+    };
+
+    if (!("IntersectionObserver" in window)) {
+      load();
+      return;
+    }
+
+    if (!cardObserver) {
+      cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+          cardObserver.unobserve(entry.target);
+          const run = pendingCards.get(entry.target);
+          pendingCards.delete(entry.target);
+          if (run) {
+            run();
+          }
+        });
+      }, { rootMargin: "400px 0px" });
+    }
+
+    pendingCards.set(card, load);
+    cardObserver.observe(card);
+  }
+
+  /** URL lista para pintar, con la marca de agua ya aplicada. */
+  function prepareImage(url) {
+    if (!url) {
+      return Promise.reject(new Error("Imagen sin URL."));
+    }
+    if (!window.ByAlaitzWatermark) {
+      return Promise.resolve(url);
+    }
+    return window.ByAlaitzWatermark.apply(url);
   }
 
   function bindLightbox() {
@@ -316,17 +354,27 @@
   }
 
   function renderLightboxImage() {
-    const image = galleryImages[activeImageIndex];
+    const shownIndex = activeImageIndex;
+    const image = galleryImages[shownIndex];
     lightbox.classList.add("is-loading");
-    lightboxImage.src = image.fullUrl;
+    lightboxImage.removeAttribute("src");
     lightboxImage.alt = image.title || "Fotografia de evento";
     lightboxImage.draggable = false;
     lightboxCaption.textContent = `${image.sectionTitle} - ${image.title || "Fotografia"}`;
-    preloadFullImage(image.fullUrl).finally(() => {
-      if (lightboxImage.src === new URL(image.fullUrl, window.location.href).href) {
+    prepareImage(image.fullUrl)
+      .then((url) => {
+        // Mientras se marcaba la foto se puede haber pasado a otra.
+        if (shownIndex !== activeImageIndex) {
+          return;
+        }
+        lightboxImage.src = url;
         lightbox.classList.remove("is-loading");
-      }
-    });
+      })
+      .catch(() => {
+        if (shownIndex === activeImageIndex) {
+          lightbox.classList.remove("is-loading");
+        }
+      });
   }
 
   function scheduleFullImagePreload() {
@@ -348,7 +396,7 @@
     if (!next) {
       return;
     }
-    preloadFullImage(next.fullUrl).finally(() => {
+    prepareImage(next.fullUrl).catch(() => {}).finally(() => {
       const run = () => preloadQueueNext(queue);
       if ("requestIdleCallback" in window) {
         idlePreloadHandle = window.requestIdleCallback(run, { timeout: 1600 });
@@ -362,39 +410,9 @@
     [-1, 1, 2].forEach((offset) => {
       const image = galleryImages[(index + offset + galleryImages.length) % galleryImages.length];
       if (image) {
-        preloadFullImage(image.fullUrl).catch(() => {});
+        prepareImage(image.fullUrl).catch(() => {});
       }
     });
-  }
-
-  function preloadFullImage(url) {
-    if (!url) {
-      return Promise.reject(new Error("Imagen sin URL."));
-    }
-    if (fullImageCache.has(url)) {
-      return fullImageCache.get(url);
-    }
-    const promise = new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = async () => {
-        try {
-          if (image.decode) {
-            await image.decode();
-          }
-        } catch (error) {
-          // La imagen puede estar lista aunque decode no responda.
-        }
-        resolve(image);
-      };
-      image.onerror = reject;
-      image.src = url;
-    });
-    fullImageCache.set(url, promise);
-    if (fullImageCache.size > 24) {
-      const [oldestUrl] = fullImageCache.keys();
-      fullImageCache.delete(oldestUrl);
-    }
-    return promise;
   }
 
   function getDriveFolderId(value) {

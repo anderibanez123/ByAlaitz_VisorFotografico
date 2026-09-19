@@ -1179,23 +1179,6 @@ output {
   pointer-events: none;
 }
 
-.gallery-lightbox::after {
-  content: "ByAlaitz";
-  position: fixed;
-  right: clamp(18px, 4vw, 54px);
-  bottom: clamp(58px, 8vw, 96px);
-  z-index: 31;
-  padding: 7px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 12px;
-  font-weight: 850;
-  background: rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(8px);
-  pointer-events: none;
-}
-
 .gallery-lightbox img {
   max-width: min(100%, 1500px);
   max-height: 82vh;
