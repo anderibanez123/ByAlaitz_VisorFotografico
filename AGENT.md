@@ -10,13 +10,14 @@ Fecha objetivo indicada por el usuario: sabado 25 de julio de 2026. La idea es d
 
 - `index.html`: galeria publica por eventos. Es la URL que se puede compartir con QR.
 - `gallery.js`: logica de la galeria publica; lee carpetas de Google Drive como secciones/eventos.
-- `visor/index.html`: visor privado de presentacion para stand. Requiere Supabase Auth antes de cargar imagenes.
+- `visor/index.html`: visor privado de presentacion para stand. Pide la clave local antes de cargar imagenes.
 - `admin/index.html`: panel oculto de configuracion local.
 - `styles.css`: estilos compartidos de visor y panel.
 - `app.js`: logica del visor privado, login, polling, transiciones, pantalla completa y cache de imagenes.
 - `admin.js`: logica del panel de configuracion.
 - `config.json`: configuracion base compartida para cualquier persona que abra la app.
-- `Guia_uso_ByAlaitz.html`: guia privada de uso. Tiene login Supabase propio y esta pensada para quien gestione el admin/visor.
+- `Guia_uso_ByAlaitz.html`: guia privada de uso. Usa la misma clave local y esta pensada para quien gestione el admin/visor.
+- `auth.js`: control de acceso compartido por visor, admin y guia. Guarda la clave como hash PBKDF2, nunca en claro.
 - `assets/drive-upload-qr.png`: QR local para abrir la carpeta de Google Drive configurada.
 - `assets/favicon.png` y `assets/favicon-32.png`: iconos de pestana generados desde el logo.
 - `assets/logo.png`: logo usado por el visor y el admin en produccion.
@@ -30,7 +31,7 @@ Fecha objetivo indicada por el usuario: sabado 25 de julio de 2026. La idea es d
 
 La URL raiz `/` muestra una galeria publica. Desde admin se pueden crear galerias/eventos manuales y seleccionar que fotos de la carpeta principal de Drive aparecen en cada una. Si no hay galerias manuales configuradas, cada subcarpeta dentro de la carpeta principal de Google Drive se interpreta como un evento/seccion, y las imagenes sueltas de la carpeta principal se muestran como `Fotos recientes`. La galeria bloquea clic derecho, arrastre, seleccion y atajos comunes de guardado como medida disuasoria; esto no es DRM real, porque cualquier imagen visible en navegador puede ser capturada por usuarios avanzados.
 
-El visor privado vive en `/visor/`. Antes de cargar fotos exige Supabase Auth; el alias corto `admin` se resuelve internamente como la cuenta admin de Supabase. El visor muestra una imagen a la vez con `object-fit: contain`, por lo que no recorta fotografias. Solo mantiene la foto actual y precarga/decodifica la siguiente antes de iniciar cada transicion para evitar tirones y dobles efectos visibles.
+El visor privado vive en `/visor/`. Antes de cargar fotos exige la clave local de `auth.js`. El visor muestra una imagen a la vez con `object-fit: contain`, por lo que no recorta fotografias. Solo mantiene la foto actual y precarga/decodifica la siguiente antes de iniciar cada transicion para evitar tirones y dobles efectos visibles.
 
 La configuracion se guarda en `localStorage` bajo la clave:
 
@@ -71,7 +72,9 @@ Desde `/admin/` se puede ajustar:
 - QR de subida: el admin muestra un QR pequeno que abre la URL de subida desde otro dispositivo. Si `URL para QR de subida` esta vacia, abre la carpeta de Drive configurada. Para la carpeta principal actual se usa `assets/drive-upload-qr.png`; si se cambia el destino, el admin intenta generar el QR desde un servicio externo.
 - Galeria publica: crear secciones/eventos y seleccionar las fotos de Drive que aparecen en cada una. Usa las mismas fotos que la presentacion.
 
-El panel admin, el visor privado y la guia de uso usan Supabase Auth. Los usuarios se gestionan desde Supabase > Authentication > Users. El alias corto `admin` se resuelve internamente en `admin.js`, `app.js` y `Guia_uso_ByAlaitz.html` para que el login sea comodo sin mostrar la cuenta en la interfaz. La web solo guarda en frontend la URL del proyecto y la publishable key; no debe incluir connection strings, service role keys ni claves secretas.
+El panel admin, el visor privado y la guia de uso comparten `auth.js`. El usuario es `admin` y la contrasena no se guarda en ningun sitio: solo queda `tokenCheck`, que es el SHA-256 del resultado de pasar la clave por PBKDF2-SHA256 (250000 iteraciones) con la sal publicada. Al entrar se rehace ese calculo y se comparan los resumenes. La sesion se recuerda guardando el testigo derivado en `localStorage`, bajo `byalaitz.auth.session`; como lo publicado es solo su resumen, leer `auth.js` no permite fabricar una sesion.
+
+Esto es un candado disuasorio, no seguridad real: la comprobacion ocurre en el navegador y se puede saltar con las herramientas de desarrollo. Para proteger de verdad haria falta un servidor. Ver la seccion de instrucciones en la cabecera de `auth.js` para cambiar la clave.
 
 En modo aleatorio, el visor usa una baraja interna: mezcla todas las imagenes y las muestra sin repetir hasta completar la vuelta. El polling de Drive no reinicia la baraja salvo que cambie realmente la lista de imagenes.
 
@@ -149,6 +152,6 @@ El visor muestra una firma discreta abajo a la izquierda: fotografias de ByAlait
 - Las fotos locales actuales son pesadas. Para evento real conviene exportarlas a 2000-2400 px de lado largo y calidad 80-85.
 - Para GitHub Pages con `/admin/`, mantener la carpeta `admin/index.html`.
 - Si se cambia el nombre o ubicacion del logo, actualizar `index.html`, `admin/index.html` y este documento.
-- La proteccion del admin depende de Supabase Auth. GitHub Pages no debe contener secretos de servidor.
+- La proteccion del admin es solo de cliente. GitHub Pages no debe contener secretos de servidor.
 
 

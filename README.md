@@ -60,11 +60,7 @@ Desde `/admin/` se puede ajustar:
 - Barra superior de contacto: activar/desactivar, texto fijo o deslizante, velocidad del desplazamiento y lista editable de redes/contacto.
 - QR de subida: el admin muestra un QR pequeno que abre la URL de subida desde otro dispositivo. Si `URL para QR de subida` esta vacia, abre la carpeta de Drive configurada. Para la carpeta principal actual se usa `assets/drive-upload-qr.png`; si se cambia el destino, el admin intenta generar el QR desde un servicio externo.
 
-La clave local inicial del panel es:
-
-```text
-stand2026
-```
+El acceso al panel, al visor y a la guia es usuario `admin` con una clave compartida. La clave no se guarda en claro: en `auth.js` solo queda su resumen PBKDF2, y al entrar se rehace el calculo y se comparan los resumenes. Para cambiarla, seguir las instrucciones de la cabecera de `auth.js`.
 
 No es seguridad real de servidor. Solo evita toques accidentales en el dispositivo del stand.
 

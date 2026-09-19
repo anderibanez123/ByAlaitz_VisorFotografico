@@ -24,6 +24,8 @@ La raiz `/` es la galeria publica para compartir por QR. El visor de stand esta 
 
 Si no quieres escribir la API key manualmente en `config.json`, puedes abrir `/admin/` en la web publicada, pegarla alli y guardar. Eso solo quedara guardado en ese navegador. Para que funcione igual para todo el mundo, exporta `config.json` desde admin y sube ese archivo al repo.
 
-## Supabase Auth
+## Acceso privado
 
-El admin, el visor privado y la guia de uso usan Supabase Auth para iniciar sesion. El usuario corto `admin` se traduce internamente a la cuenta admin configurada en Supabase; crear o actualizar ese usuario desde `Authentication` -> `Users` con la contrasena acordada. No subir nunca connection strings, service role keys ni contrasenas de base de datos al repositorio.
+El admin, el visor privado y la guia de uso comparten el candado de `auth.js`. El usuario es `admin` y la clave se guarda como hash PBKDF2, nunca en claro. Para cambiarla, seguir las instrucciones de la cabecera de `auth.js`.
+
+La comprobacion ocurre en el navegador, asi que no protege frente a alguien tecnico: sirve para evitar toques accidentales en el dispositivo del stand y para que la guia y el panel no queden a la vista de cualquiera. Todo lo que este en el repositorio es publico, incluida la sal y el resumen de la clave.

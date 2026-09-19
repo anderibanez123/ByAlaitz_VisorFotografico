@@ -370,7 +370,7 @@
           <li>Galeria publica: <code>https://anderibanez123.github.io/ByAlaitz_VisorFotografico/</code></li>
           <li>Visor privado de stand: <code>/visor/</code> al final de la URL.</li>
           <li>Panel admin: <code>/admin/</code> al final de la URL.</li>
-          <li>Acceso privado: usuario <code>admin</code> y la contrasena configurada en Supabase Auth.</li>
+          <li>Acceso privado: usuario <code>admin</code> y la contrasena guardada como hash en <code>auth.js</code>.</li>
         </ul>
         <p class="callout">Tambien puedes entrar al admin tocando el logo pequeno de la esquina inferior derecha del visor.</p>
       </article>
@@ -436,7 +436,7 @@
         <ul>
           <li>Si no salen fotos, revisa que la carpeta de Drive tenga imagenes directamente dentro.</li>
           <li>Si Drive no carga, revisa que la API key siga activa y permitida para la web.</li>
-          <li>Si no puedes entrar al admin, revisa que el usuario exista en Supabase > Authentication > Users.</li>
+          <li>Si no puedes entrar al admin, revisa que la clave sea la correcta. La clave se cambia en <code>auth.js</code>.</li>
           <li>Si un cambio no aparece, refresca con <code>Ctrl + F5</code>.</li>
           <li>Si el QR no deja subir, abre la carpeta con una cuenta que tenga permiso de edicion.</li>
         </ul>
@@ -445,41 +445,31 @@
 
     <p class="footer">Fotografias de ByAlaitz - Web por anderibanez_</p>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=20260919-auth-local"></script>
   <script>
     (function () {
       "use strict";
-
-      const LOGIN_ALIASES = {
-        admin: ["anderibanez123", "gmail.com"].join("@")
-      };
-      const SUPABASE_URL = "https://ixhydcablbjkkzchyjbq.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_lyR6MvOSNxbqdD21XN23fQ_w8jXqgtq";
 
       const lock = document.getElementById("guideLock");
       const form = document.getElementById("guideLoginForm");
       const emailInput = document.getElementById("guideEmailInput");
       const passwordInput = document.getElementById("guidePasswordInput");
       const status = document.getElementById("guideAuthStatus");
-      let supabaseClient = null;
 
       init();
 
       async function init() {
-        if (!window.supabase) {
-          status.textContent = "No se pudo cargar Supabase.";
+        if (!window.ByAlaitzAuth) {
+          status.textContent = "No se pudo cargar el control de acceso.";
           return;
         }
 
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true
-          }
-        });
+        if (!window.ByAlaitzAuth.isAvailable()) {
+          status.textContent = "Este navegador no permite comprobar la clave.";
+          return;
+        }
 
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (!error && data.session) {
+        if (await window.ByAlaitzAuth.hasSession()) {
           unlockGuide();
           return;
         }
@@ -489,13 +479,10 @@
 
       async function handleLogin(event) {
         event.preventDefault();
-        status.textContent = "Entrando...";
-        const { error } = await supabaseClient.auth.signInWithPassword({
-          email: getLoginEmail(emailInput.value),
-          password: passwordInput.value
-        });
+        status.textContent = "Comprobando...";
+        const granted = await window.ByAlaitzAuth.login(emailInput.value, passwordInput.value);
 
-        if (error) {
+        if (!granted) {
           passwordInput.value = "";
           status.textContent = "Usuario o contrasena incorrectos.";
           return;
@@ -507,11 +494,6 @@
       function unlockGuide() {
         document.body.classList.remove("guide-locked");
         lock.classList.add("hidden");
-      }
-
-      function getLoginEmail(value) {
-        const login = value.trim().toLowerCase();
-        return LOGIN_ALIASES[login] || login;
       }
     })();
   </script>

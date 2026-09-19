@@ -16,7 +16,7 @@
     <section id="lockPanel" class="admin-card compact">
       <img class="admin-logo" src="../assets/logo.png" alt="SuperRutas">
       <h1>Panel del visor</h1>
-      <p>Inicia sesion con tu usuario autorizado de Supabase.</p>
+      <p>Introduce el usuario y la clave del panel.</p>
       <form id="unlockForm" class="form-grid">
         <label>
           Usuario
@@ -39,7 +39,6 @@
           <p>Organiza el visor privado, la galeria publica y los datos visibles en pantalla.</p>
         </div>
         <div class="admin-actions">
-          <span id="currentUserEmail" class="field-note hidden"></span>
           <a class="ghost-link" href="../">Galeria</a>
           <a class="ghost-link" href="../visor/">Visor privado</a>
           <a class="ghost-link" href="../Guia_uso_ByAlaitz.html">Guia</a>
@@ -243,8 +242,8 @@
       </footer>
     </section>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../admin.js?v=20260722-admin-organized"></script>
+  <script src="../auth.js?v=20260919-auth-local"></script>
+  <script src="../admin.js?v=20260919-auth-local"></script>
 </body>
 
 </html>

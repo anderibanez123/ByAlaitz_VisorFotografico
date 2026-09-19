@@ -6,9 +6,6 @@
   const SCRIPT = document.currentScript;
   const CONFIG_URL = SCRIPT?.dataset.configUrl || "config.json";
   const DEFAULT_DRIVE_FOLDER_ID = "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ";
-  const LOGIN_ALIASES = {
-    admin: ["anderibanez123", "gmail.com"].join("@")
-  };
   const DEFAULT_SETTINGS = {
     intervalSeconds: 5,
     transitionMs: 1200,
@@ -21,10 +18,6 @@
     uploadTargetUrl: "",
     driveApiKey: "",
     pollSeconds: 45,
-    supabase: {
-      url: "https://ixhydcablbjkkzchyjbq.supabase.co",
-      publishableKey: "sb_publishable_lyR6MvOSNxbqdD21XN23fQ_w8jXqgtq"
-    },
     background: {
       mode: "default",
       color: "#050505",
@@ -61,7 +54,6 @@
   const presentationAuthStatus = document.getElementById("presentationAuthStatus");
 
   let settings = normalizeSettings({});
-  let supabaseClient = null;
   let images = [];
   let index = 0;
   let timerId = null;
@@ -80,7 +72,6 @@
 
   async function init() {
     settings = await readSettings();
-    setupSupabase(settings.supabase);
     if (!await canOpenPresentation()) {
       showPresentationLock();
       return;
@@ -118,38 +109,11 @@
     refreshImages(false);
   }
 
-  function setupSupabase(config) {
-    const supabaseConfig = {
-      ...DEFAULT_SETTINGS.supabase,
-      ...(config || {})
-    };
-
-    if (!window.supabase || !supabaseConfig.url || !supabaseConfig.publishableKey) {
-      supabaseClient = null;
-      return;
-    }
-
-    supabaseClient = window.supabase.createClient(
-      supabaseConfig.url,
-      supabaseConfig.publishableKey,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true
-        }
-      }
-    );
-  }
-
   async function canOpenPresentation() {
     if (!presentationLock) {
       return true;
     }
-    if (!supabaseClient) {
-      return false;
-    }
-    const { data, error } = await supabaseClient.auth.getSession();
-    return !error && Boolean(data.session);
+    return Boolean(window.ByAlaitzAuth) && await window.ByAlaitzAuth.hasSession();
   }
 
   function showPresentationLock() {
@@ -158,8 +122,8 @@
     }
     presentationLock.classList.remove("hidden");
     presentationLoginForm.addEventListener("submit", handlePresentationLogin);
-    if (!supabaseClient) {
-      presentationAuthStatus.textContent = "No se pudo cargar Supabase.";
+    if (!window.ByAlaitzAuth || !window.ByAlaitzAuth.isAvailable()) {
+      presentationAuthStatus.textContent = "Este navegador no permite comprobar la clave.";
     }
   }
 
@@ -171,18 +135,18 @@
 
   async function handlePresentationLogin(event) {
     event.preventDefault();
-    if (!supabaseClient) {
-      presentationAuthStatus.textContent = "Supabase no esta disponible.";
+    if (!window.ByAlaitzAuth) {
+      presentationAuthStatus.textContent = "No se pudo cargar el control de acceso.";
       return;
     }
 
-    presentationAuthStatus.textContent = "Entrando...";
-    const { error } = await supabaseClient.auth.signInWithPassword({
-      email: getLoginEmail(presentationEmailInput.value),
-      password: presentationPasswordInput.value
-    });
+    presentationAuthStatus.textContent = "Comprobando...";
+    const granted = await window.ByAlaitzAuth.login(
+      presentationEmailInput.value,
+      presentationPasswordInput.value
+    );
 
-    if (error) {
+    if (!granted) {
       presentationPasswordInput.value = "";
       presentationAuthStatus.textContent = "Usuario o contrasena incorrectos.";
       return;
@@ -191,11 +155,6 @@
     presentationPasswordInput.value = "";
     presentationAuthStatus.textContent = "";
     startViewer();
-  }
-
-  function getLoginEmail(value) {
-    const login = value.trim().toLowerCase();
-    return LOGIN_ALIASES[login] || login;
   }
 
   async function readSettings() {
@@ -246,10 +205,6 @@
         ...DEFAULT_SETTINGS.contactBar,
         ...(saved.contactBar || {}),
         items: Array.isArray(saved.contactBar?.items) ? saved.contactBar.items : DEFAULT_SETTINGS.contactBar.items
-      },
-      supabase: {
-        ...DEFAULT_SETTINGS.supabase,
-        ...(saved.supabase || {})
       },
       background: {
         ...DEFAULT_SETTINGS.background,

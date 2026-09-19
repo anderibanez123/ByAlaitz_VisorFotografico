@@ -266,11 +266,7 @@
     const caption = document.createElement("span");
     caption.textContent = image.title;
 
-    const watermark = document.createElement("span");
-    watermark.className = "gallery-watermark";
-    watermark.textContent = "ByAlaitz";
-
-    button.append(photo, watermark, caption);
+    button.append(photo, caption);
     return button;
   }
 

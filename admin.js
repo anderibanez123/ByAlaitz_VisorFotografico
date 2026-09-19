@@ -5,9 +5,6 @@
   const CONFIG_URL = "../config.json";
   const DEFAULT_DRIVE_FOLDER_ID = "12yEeMDnOLoU2h4vDtqDD2ICxJEm1xSqQ";
   const DEFAULT_DRIVE_QR = "../assets/drive-upload-qr.png";
-  const LOGIN_ALIASES = {
-    admin: ["anderibanez123", "gmail.com"].join("@")
-  };
   const DEFAULT_SETTINGS = {
     intervalSeconds: 5,
     transitionMs: 1200,
@@ -20,10 +17,6 @@
     uploadTargetUrl: "",
     driveApiKey: "",
     pollSeconds: 45,
-    supabase: {
-      url: "https://ixhydcablbjkkzchyjbq.supabase.co",
-      publishableKey: "sb_publishable_lyR6MvOSNxbqdD21XN23fQ_w8jXqgtq"
-    },
     gallery: {
       rootSectionTitle: "Fotos recientes",
       emptyMessage: "Todavia no hay eventos publicados.",
@@ -61,7 +54,6 @@
   const exportConfigButton = document.getElementById("exportConfigButton");
   const resetButton = document.getElementById("resetButton");
   const logoutButton = document.getElementById("logoutButton");
-  const currentUserEmail = document.getElementById("currentUserEmail");
   const saveStatus = document.getElementById("saveStatus");
   const contactItems = document.getElementById("contactItems");
   const addContactItem = document.getElementById("addContactItem");
@@ -77,8 +69,6 @@
   let autosaveId = null;
   let currentBackgroundImageDataUrl = "";
   let currentGalleryImages = [];
-  let supabaseClient = null;
-  let currentSupabaseConfig = { ...DEFAULT_SETTINGS.supabase };
 
   const fields = {
     intervalSeconds: document.getElementById("intervalSeconds"),
@@ -157,56 +147,21 @@
   initAuth();
 
   async function initAuth() {
-    const settings = await readSettings();
-    setupSupabase(settings.supabase);
-
-    if (!supabaseClient) {
-      showLock("No se pudo cargar Supabase. Revisa la conexion.");
+    if (!window.ByAlaitzAuth) {
+      showLock("No se pudo cargar el control de acceso.");
       return;
     }
 
-    const { data, error } = await supabaseClient.auth.getSession();
-    if (error) {
-      showLock("No se pudo comprobar la sesion.");
+    if (!window.ByAlaitzAuth.isAvailable()) {
+      showLock("Este navegador no permite comprobar la clave.");
       return;
     }
 
-    if (data.session) {
-      showSettings(settings, data.session.user);
+    if (await window.ByAlaitzAuth.hasSession()) {
+      showSettings(await readSettings());
     } else {
       showLock();
     }
-
-    supabaseClient.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        showSettings(null, session.user);
-      } else {
-        showLock();
-      }
-    });
-  }
-
-  function setupSupabase(config) {
-    currentSupabaseConfig = {
-      ...DEFAULT_SETTINGS.supabase,
-      ...(config || {})
-    };
-
-    if (!window.supabase || !currentSupabaseConfig.url || !currentSupabaseConfig.publishableKey) {
-      supabaseClient = null;
-      return;
-    }
-
-    supabaseClient = window.supabase.createClient(
-      currentSupabaseConfig.url,
-      currentSupabaseConfig.publishableKey,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true
-        }
-      }
-    );
   }
 
   function showLock(message = "") {
@@ -215,10 +170,9 @@
     authStatus.textContent = message;
   }
 
-  async function showSettings(settings = null, user = null) {
+  async function showSettings(settings = null) {
     lockPanel.classList.add("hidden");
     settingsPanel.classList.remove("hidden");
-    currentUserEmail.textContent = "";
     populate(settings || await readSettings());
   }
 
@@ -270,10 +224,6 @@
         ...DEFAULT_SETTINGS.contactBar,
         ...(saved.contactBar || {}),
         items: Array.isArray(saved.contactBar?.items) ? saved.contactBar.items : DEFAULT_SETTINGS.contactBar.items
-      },
-      supabase: {
-        ...DEFAULT_SETTINGS.supabase,
-        ...(saved.supabase || {})
       },
       gallery: {
         ...DEFAULT_SETTINGS.gallery,
@@ -327,7 +277,6 @@
       uploadTargetUrl: fields.uploadTargetUrl.value.trim(),
       driveApiKey: fields.driveApiKey.value.trim(),
       pollSeconds: Number(fields.pollSeconds.value),
-      supabase: currentSupabaseConfig,
       gallery: {
         rootSectionTitle: "Fotos recientes",
         emptyMessage: "Todavia no hay eventos publicados.",
@@ -353,46 +302,27 @@
 
   async function handleLogin(event) {
     event.preventDefault();
-    if (!supabaseClient) {
-      authStatus.textContent = "Supabase no esta disponible.";
+    if (!window.ByAlaitzAuth) {
+      authStatus.textContent = "No se pudo cargar el control de acceso.";
       return;
     }
 
-    authStatus.textContent = "Entrando...";
-    const loginEmails = getLoginEmails(emailInput.value);
-    let error = null;
+    authStatus.textContent = "Comprobando...";
+    const granted = await window.ByAlaitzAuth.login(emailInput.value, passwordInput.value);
 
-    for (const email of loginEmails) {
-      const result = await supabaseClient.auth.signInWithPassword({
-        email,
-        password: passwordInput.value
-      });
-      error = result.error;
-      if (!error) {
-        break;
-      }
-    }
-
-    if (error) {
+    if (!granted) {
       passwordInput.value = "";
-      authStatus.textContent = "Email o contrasena incorrectos.";
+      authStatus.textContent = "Usuario o contrasena incorrectos.";
       return;
     }
 
     passwordInput.value = "";
     authStatus.textContent = "";
+    showSettings(await readSettings());
   }
 
-  function getLoginEmails(value) {
-    const login = value.trim().toLowerCase();
-    const aliases = LOGIN_ALIASES[login];
-    return Array.isArray(aliases) ? aliases : [aliases || login];
-  }
-
-  async function handleLogout() {
-    if (supabaseClient) {
-      await supabaseClient.auth.signOut();
-    }
+  function handleLogout() {
+    window.ByAlaitzAuth.logout();
     showLock("Sesion cerrada.");
   }
 
